@@ -33,8 +33,5 @@ El mercado automotriz sufre de "amnesia mecánica" y falta de transparencia. Al 
 
 ## Cómo ejecutar el proyecto
 
-1. Clonar el repositorio localmente usando `git clone [URL_DEL_REPOSITORIO]`.
-2. Crear un archivo `.env` en la raíz del proyecto basándose en el `.env.example` y configurar las variables de entorno (Credenciales de Supabase, claves de APIs de Inteligencia Artificial y webhooks de n8n).
-3. Instalar las dependencias del proyecto ejecutando `npm install` tanto en el directorio del cliente como en el del servidor.
-4. Ejecutar las migraciones correspondientes en el panel de Supabase para generar las tablas estructurales (vehículos, usuarios, roles, historiales).
-5. Iniciar el servidor de desarrollo local ejecutando `npm run dev`.
+git clone [URL_DEL_REPOSITORIO]
+git clone [URL_DEL_REPOSITORIO]
