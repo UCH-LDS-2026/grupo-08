@@ -4,9 +4,9 @@
 ## Grupo N° 8
 
 ## Integrantes:
-- Ignacio
-- [Nombre de tu compañero]
-- [Nombre de tu compañero]
+- Ignacio Azzolina
+- Constantino Mateu
+- Arian Nuñez
 
 ## Problema que resuelve
 
