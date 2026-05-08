@@ -140,29 +140,3 @@ En caso de utilizar variables de entorno, se deberá crear un archivo `.env` a p
 
 ---
 
-## Estado actual del proyecto
-
-El proyecto se encuentra en una etapa inicial. Actualmente el repositorio contiene la documentación base de la idea, información general del sistema y materiales de trabajo vinculados a la materia.
-
-Próximamente se debería avanzar con:
-
-- definición detallada de requerimientos funcionales;
-- diseño de pantallas principales;
-- modelado de base de datos;
-- creación de la estructura inicial del frontend;
-- configuración de Supabase;
-- definición de roles y permisos;
-- implementación del primer MVP.
-
----
-
-## Próximos pasos
-
-1. Completar los requerimientos funcionales y no funcionales.
-2. Diseñar el modelo entidad-relación inicial.
-3. Crear la estructura base del proyecto frontend.
-4. Definir las pantallas principales del sistema.
-5. Configurar autenticación y roles en Supabase.
-6. Implementar el módulo de vehículos.
-7. Implementar el módulo de historial de mantenimiento.
-8. Preparar una primera versión demostrable del MVP.
