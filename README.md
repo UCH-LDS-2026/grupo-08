@@ -58,9 +58,22 @@ Se eligió Node.js con Express.js por su simplicidad para construir APIs REST y 
 
 ---
 
+## Versiones del SDK y dependencias
+
+| Herramienta | Versión |
+|---|---|
+| Node.js | v22.16.0 |
+| npm | v10.9.2 |
+| Express.js | 4.18.x |
+| better-sqlite3 | 12.9.x |
+| bcryptjs | 2.4.x |
+| jsonwebtoken | 9.0.x |
+| dotenv | 16.0.x |
+| nodemon (dev) | 3.0.x |
+
 ## Requisitos previos
-- Node.js v18 o superior
-- npm v9 o superior
+- Node.js v22.16.0
+- npm v10.9.2
 - Git
 
 ## Instalación
