@@ -5,6 +5,7 @@ require('dotenv').config();
 const db = require('./config/database');
 const authRoutes = require('./routes/authRoutes');
 const vehiculoRoutes = require('./routes/vehiculoRoutes');
+const historialRoutes = require('./routes/historialRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,6 +15,7 @@ app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/vehiculos', vehiculoRoutes);
+app.use('/api/historial', historialRoutes);
 
 app.get('/', (req, res) => {
     res.json({
@@ -25,7 +27,9 @@ app.get('/', (req, res) => {
             'POST /api/auth/login',
             'POST /api/vehiculos',
             'GET /api/vehiculos/mis-vehiculos',
-            'GET /api/vehiculos/patente/:patente'
+            'GET /api/vehiculos/patente/:patente',
+            'POST /api/historial',
+            'GET /api/historial/vehiculo/:vehiculo_id'
         ]
     });
 });
