@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HistoryCar</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f2f5;
+      color: #333;
+    }
+
+    header {
+      background: #1a1a2e;
+      color: white;
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 { font-size: 1.5rem; letter-spacing: 1px; }
+    header span { font-size: 0.85rem; opacity: 0.7; }
+
+    #btn-logout {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: none;
+    }
+
+    #user-info { font-size: 0.9rem; opacity: 0.85; display: none; }
+
+    .container { max-width: 900px; margin: 40px auto; padding: 0 16px; }
+
+    /* AUTH */
+    #auth-section {
+      background: white;
+      border-radius: 12px;
+      padding: 40px;
+      max-width: 420px;
+      margin: 60px auto;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    #auth-section h2 { margin-bottom: 24px; color: #1a1a2e; text-align: center; }
+
+    .tabs { display: flex; margin-bottom: 24px; border-bottom: 2px solid #eee; }
+    .tab {
+      flex: 1; text-align: center; padding: 10px;
+      cursor: pointer; font-weight: 600; color: #888;
+      border-bottom: 3px solid transparent; margin-bottom: -2px;
+      transition: all 0.2s;
+    }
+    .tab.active { color: #1a1a2e; border-bottom-color: #1a1a2e; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 0.85rem; margin-bottom: 6px; color: #555; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 10px 12px;
+      border: 1px solid #ddd; border-radius: 8px;
+      font-size: 0.95rem; transition: border 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus {
+      outline: none; border-color: #1a1a2e;
+    }
+
+    .btn {
+      width: 100%; padding: 12px;
+      background: #1a1a2e; color: white;
+      border: none; border-radius: 8px;
+      font-size: 1rem; font-weight: 600;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .btn:hover { background: #16213e; }
+    .btn-sm {
+      width: auto; padding: 8px 16px;
+      font-size: 0.85rem; border-radius: 6px;
+    }
+    .btn-danger { background: #e74c3c; }
+    .btn-danger:hover { background: #c0392b; }
+    .btn-success { background: #27ae60; }
+    .btn-success:hover { background: #219a52; }
+
+    .alert {
+      padding: 12px 16px; border-radius: 8px;
+      margin-bottom: 16px; font-size: 0.9rem;
+    }
+    .alert-error { background: #fde8e8; color: #c0392b; }
+    .alert-success { background: #e8f8f0; color: #27ae60; }
+
+    /* DASHBOARD */
+    #dashboard { display: none; }
+
+    .nav-tabs {
+      display: flex; gap: 8px; margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .nav-tab {
+      padding: 10px 20px; border-radius: 8px;
+      cursor: pointer; font-weight: 600;
+      background: white; color: #555;
+      border: 2px solid #ddd; transition: all 0.2s;
+    }
+    .nav-tab.active {
+      background: #1a1a2e; color: white; border-color: #1a1a2e;
+    }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .card {
+      background: white; border-radius: 12px;
+      padding: 24px; margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    }
+    .card h3 { margin-bottom: 16px; color: #1a1a2e; font-size: 1.1rem; }
+
+    table {
+      width: 100%; border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    th {
+      background: #f8f9fa; text-align: left;
+      padding: 10px 12px; border-bottom: 2px solid #eee;
+      color: #555; font-size: 0.8rem; text-transform: uppercase;
+    }
+    td { padding: 12px; border-bottom: 1px solid #f0f0f0; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafafa; }
+
+    .badge {
+      padding: 4px 10px; border-radius: 20px;
+      font-size: 0.75rem; font-weight: 600;
+    }
+    .badge-dueno { background: #dbeafe; color: #1d4ed8; }
+    .badge-taller { background: #fef3c7; color: #b45309; }
+    .badge-admin { background: #fce7f3; color: #9d174d; }
+
+    .empty { text-align: center; padding: 32px; color: #aaa; font-size: 0.95rem; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    .search-row { display: flex; gap: 10px; }
+    .search-row input { flex: 1; }
+    .search-row button { width: auto; }
+
+    .historial-item {
+      border-left: 4px solid #1a1a2e;
+      padding: 12px 16px; margin-bottom: 12px;
+      background: #f8f9fa; border-radius: 0 8px 8px 0;
+    }
+    .historial-item .tipo {
+      font-weight: 700; color: #1a1a2e;
+      text-transform: uppercase; font-size: 0.8rem;
+    }
+    .historial-item .desc { margin: 4px 0; font-size: 0.95rem; }
+    .historial-item .meta { font-size: 0.8rem; color: #888; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🚗 HistoryCar</h1>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <span id="user-info"></span>
+    <button id="btn-logout" onclick="logout()">Cerrar sesión</button>
+  </div>
+</header>
+
+<!-- AUTH -->
+<div id="auth-section">
+  <h2>HistoryCar</h2>
+  <div class="tabs">
+    <div class="tab active" onclick="switchAuth('login')">Iniciar sesión</div>
+    <div class="tab" onclick="switchAuth('registro')">Registrarse</div>
+  </div>
+
+  <div id="auth-alert"></div>
+
+  <!-- Login -->
+  <div id="form-login">
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="juan@gmail.com" />
+    </div>
+    <div class="form-group">
+      <label>Contraseña</label>
+      <input type="password" id="login-password" placeholder="••••••" />
+    </div>
+    <button class="btn" onclick="login()">Entrar</button>
+  </div>
+
+  <!-- Registro -->
+  <div id="form-registro" style="display:none;">
+    <div class="form-group">
+      <label>Nombre completo</label>
+      <input type="text" id="reg-nombre" placeholder="Juan Pérez" />
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="reg-email" placeholder="juan@gmail.com" />
+    </div>
+    <div class="form-group">
+      <label>Contraseña</label>
+      <input type="password" id="reg-password" placeholder="••••••" />
+    </div>
+    <div class="form-group">
+      <label>Rol</label>
+      <select id="reg-rol">
+        <option value="dueno">Dueño de vehículo</option>
+        <option value="taller">Taller mecánico</option>
+        <option value="admin">Administrador</option>
+      </select>
+    </div>
+    <button class="btn" onclick="registro()">Crear cuenta</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="container">
+    <div class="nav-tabs">
+      <div class="nav-tab active" onclick="switchPanel('mis-vehiculos')">Mis Vehículos</div>
+      <div class="nav-tab" onclick="switchPanel('buscar')">Buscar por Patente</div>
+      <div class="nav-tab" onclick="switchPanel('historial')">Historial</div>
+      <div class="nav-tab" onclick="switchPanel('agregar-vehiculo')">+ Agregar Vehículo</div>
+    </div>
+
+    <!-- Panel: Mis Vehículos -->
+    <div id="panel-mis-vehiculos" class="panel active">
+      <div class="card">
+        <h3>Mis Vehículos</h3>
+        <div id="lista-vehiculos"><div class="empty">Cargando...</div></div>
+      </div>
+    </div>
+
+    <!-- Panel: Buscar por Patente -->
+    <div id="panel-buscar" class="panel">
+      <div class="card">
+        <h3>Buscar vehículo por patente</h3>
+        <div class="search-row">
+          <input type="text" id="input-patente" placeholder="Ej: ABC123" style="text-transform:uppercase;" />
+          <button class="btn btn-sm" onclick="buscarPatente()">Buscar</button>
+        </div>
+        <div id="resultado-busqueda" style="margin-top:20px;"></div>
+      </div>
+    </div>
+
+    <!-- Panel: Historial -->
+    <div id="panel-historial" class="panel">
+      <div class="card">
+        <h3>Ver historial de vehículo</h3>
+        <div class="search-row" style="margin-bottom:20px;">
+          <input type="number" id="input-vehiculo-id" placeholder="ID del vehículo" />
+          <button class="btn btn-sm" onclick="verHistorial()">Ver historial</button>
+        </div>
+        <div id="resultado-historial"></div>
+      </div>
+      <div class="card">
+        <h3>Agregar servicio al historial</h3>
+        <div id="historial-alert"></div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>ID del vehículo</label>
+            <input type="number" id="hist-vehiculo-id" placeholder="1" />
+          </div>
+          <div class="form-group">
+            <label>Tipo</label>
+            <select id="hist-tipo">
+              <option value="service">Service</option>
+              <option value="reparacion">Reparación</option>
+              <option value="inspeccion">Inspección</option>
+              <option value="siniestro">Siniestro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Fecha</label>
+            <input type="date" id="hist-fecha" />
+          </div>
+          <div class="form-group">
+            <label>Kilometraje</label>
+            <input type="number" id="hist-kilometraje" placeholder="50000" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Descripción</label>
+          <input type="text" id="hist-descripcion" placeholder="Cambio de aceite y filtros" />
+        </div>
+        <button class="btn" onclick="agregarHistorial()">Guardar servicio</button>
+      </div>
+    </div>
+
+    <!-- Panel: Agregar Vehículo -->
+    <div id="panel-agregar-vehiculo" class="panel">
+      <div class="card">
+        <h3>Registrar nuevo vehículo</h3>
+        <div id="vehiculo-alert"></div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Patente</label>
+            <input type="text" id="veh-patente" placeholder="ABC123" style="text-transform:uppercase;" />
+          </div>
+          <div class="form-group">
+            <label>Marca</label>
+            <input type="text" id="veh-marca" placeholder="Toyota" />
+          </div>
+          <div class="form-group">
+            <label>Modelo</label>
+            <input type="text" id="veh-modelo" placeholder="Corolla" />
+          </div>
+          <div class="form-group">
+            <label>Año</label>
+            <input type="number" id="veh-anio" placeholder="2020" />
+          </div>
+          <div class="form-group">
+            <label>Color</label>
+            <input type="text" id="veh-color" placeholder="Blanco" />
+          </div>
+        </div>
+        <button class="btn btn-success" onclick="agregarVehiculo()">Registrar vehículo</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const API = 'http://localhost:3000/api';
+  let token = localStorage.getItem('token');
+  let usuarioActual = JSON.parse(localStorage.getItem('usuario') || 'null');
+
+  if (token && usuarioActual) mostrarDashboard();
+
+  // --- AUTH ---
+  function switchAuth(modo) {
+    document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', (modo === 'login' && i === 0) || (modo === 'registro' && i === 1)));
+    document.getElementById('form-login').style.display = modo === 'login' ? 'block' : 'none';
+    document.getElementById('form-registro').style.display = modo === 'registro' ? 'block' : 'none';
+    document.getElementById('auth-alert').innerHTML = '';
+  }
+
+  async function login() {
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    try {
+      const res = await fetch(`${API}/auth/login`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (!res.ok) return showAlert('auth-alert', data.error, 'error');
+      token = data.token;
+      usuarioActual = data.usuario;
+      localStorage.setItem('token', token);
+      localStorage.setItem('usuario', JSON.stringify(usuarioActual));
+      mostrarDashboard();
+    } catch { showAlert('auth-alert', 'Error de conexión con el servidor', 'error'); }
+  }
+
+  async function registro() {
+    const nombre = document.getElementById('reg-nombre').value;
+    const email = document.getElementById('reg-email').value;
+    const password = document.getElementById('reg-password').value;
+    const rol = document.getElementById('reg-rol').value;
+    try {
+      const res = await fetch(`${API}/auth/registro`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre, email, password, rol })
+      });
+      const data = await res.json();
+      if (!res.ok) return showAlert('auth-alert', data.error, 'error');
+      showAlert('auth-alert', 'Cuenta creada. Ahora iniciá sesión.', 'success');
+      switchAuth('login');
+    } catch { showAlert('auth-alert', 'Error de conexión con el servidor', 'error'); }
+  }
+
+  function logout() {
+    token = null; usuarioActual = null;
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('auth-section').style.display = 'block';
+    document.getElementById('btn-logout').style.display = 'none';
+    document.getElementById('user-info').style.display = 'none';
+  }
+
+  function mostrarDashboard() {
+    document.getElementById('auth-section').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    document.getElementById('btn-logout').style.display = 'inline-block';
+    document.getElementById('user-info').style.display = 'inline';
+    document.getElementById('user-info').textContent = `${usuarioActual.nombre} · ${usuarioActual.rol}`;
+    cargarMisVehiculos();
+    document.getElementById('hist-fecha').valueAsDate = new Date();
+  }
+
+  // --- NAVEGACIÓN ---
+  function switchPanel(id) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(`panel-${id}`).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  // --- VEHÍCULOS ---
+  async function cargarMisVehiculos() {
+    const res = await fetch(`${API}/vehiculos/mis-vehiculos`, { headers: { Authorization: `Bearer ${token}` } });
+    const data = await res.json();
+    const lista = document.getElementById('lista-vehiculos');
+    if (!data.length) return lista.innerHTML = '<div class="empty">No tenés vehículos registrados aún.</div>';
+    lista.innerHTML = `
+      <table>
+        <thead><tr><th>ID</th><th>Patente</th><th>Marca</th><th>Modelo</th><th>Año</th><th>Color</th></tr></thead>
+        <tbody>
+          ${data.map(v => `<tr>
+            <td>${v.id}</td>
+            <td><strong>${v.patente}</strong></td>
+            <td>${v.marca}</td>
+            <td>${v.modelo}</td>
+            <td>${v.anio || '-'}</td>
+            <td>${v.color || '-'}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+  }
+
+  async function agregarVehiculo() {
+    const body = {
+      patente: document.getElementById('veh-patente').value.toUpperCase(),
+      marca: document.getElementById('veh-marca').value,
+      modelo: document.getElementById('veh-modelo').value,
+      anio: parseInt(document.getElementById('veh-anio').value),
+      color: document.getElementById('veh-color').value
+    };
+    try {
+      const res = await fetch(`${API}/vehiculos`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      if (!res.ok) return showAlert('vehiculo-alert', data.error, 'error');
+      showAlert('vehiculo-alert', `Vehículo ${body.patente} registrado exitosamente`, 'success');
+      ['veh-patente','veh-marca','veh-modelo','veh-anio','veh-color'].forEach(id => document.getElementById(id).value = '');
+      cargarMisVehiculos();
+    } catch { showAlert('vehiculo-alert', 'Error de conexión', 'error'); }
+  }
+
+  async function buscarPatente() {
+    const patente = document.getElementById('input-patente').value.toUpperCase().trim();
+    if (!patente) return;
+    const res = await fetch(`${API}/vehiculos/patente/${patente}`, { headers: { Authorization: `Bearer ${token}` } });
+    const data = await res.json();
+    const div = document.getElementById('resultado-busqueda');
+    if (!res.ok) return div.innerHTML = `<div class="alert alert-error">${data.error}</div>`;
+    div.innerHTML = `
+      <table>
+        <thead><tr><th>ID</th><th>Patente</th><th>Marca</th><th>Modelo</th><th>Año</th><th>Color</th><th>Dueño ID</th></tr></thead>
+        <tbody><tr>
+          <td>${data.id}</td>
+          <td><strong>${data.patente}</strong></td>
+          <td>${data.marca}</td>
+          <td>${data.modelo}</td>
+          <td>${data.anio || '-'}</td>
+          <td>${data.color || '-'}</td>
+          <td>${data.usuario_id}</td>
+        </tr></tbody>
+      </table>`;
+  }
+
+  // --- HISTORIAL ---
+  async function verHistorial() {
+    const id = document.getElementById('input-vehiculo-id').value;
+    if (!id) return;
+    const res = await fetch(`${API}/historial/vehiculo/${id}`);
+    const data = await res.json();
+    const div = document.getElementById('resultado-historial');
+    if (!res.ok || !data.length) return div.innerHTML = '<div class="empty">No hay historial para este vehículo.</div>';
+    div.innerHTML = data.map(h => `
+      <div class="historial-item">
+        <div class="tipo">${h.tipo}</div>
+        <div class="desc">${h.descripcion}</div>
+        <div class="meta">📅 ${h.fecha} &nbsp;·&nbsp; 🛣️ ${h.kilometraje ? h.kilometraje + ' km' : 'N/A'}</div>
+      </div>`).join('');
+  }
+
+  async function agregarHistorial() {
+    const body = {
+      vehiculo_id: parseInt(document.getElementById('hist-vehiculo-id').value),
+      tipo: document.getElementById('hist-tipo').value,
+      descripcion: document.getElementById('hist-descripcion').value,
+      fecha: document.getElementById('hist-fecha').value,
+      kilometraje: parseInt(document.getElementById('hist-kilometraje').value)
+    };
+    try {
+      const res = await fetch(`${API}/historial`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      if (!res.ok) return showAlert('historial-alert', data.error, 'error');
+      showAlert('historial-alert', 'Servicio registrado exitosamente', 'success');
+      ['hist-vehiculo-id','hist-descripcion','hist-kilometraje'].forEach(id => document.getElementById(id).value = '');
+    } catch { showAlert('historial-alert', 'Error de conexión', 'error'); }
+  }
+
+  // --- HELPERS ---
+  function showAlert(id, msg, tipo) {
+    document.getElementById(id).innerHTML = `<div class="alert alert-${tipo}">${msg}</div>`;
+    setTimeout(() => document.getElementById(id).innerHTML = '', 4000);
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      if (document.getElementById('form-login').style.display !== 'none') login();
+    }
+  });
+</script>
+</body>
+</html>
