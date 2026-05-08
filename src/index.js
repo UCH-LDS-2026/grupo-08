@@ -4,6 +4,7 @@ require('dotenv').config();
 
 const db = require('./config/database');
 const authRoutes = require('./routes/authRoutes');
+const vehiculoRoutes = require('./routes/vehiculoRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,8 +12,8 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Rutas
 app.use('/api/auth', authRoutes);
+app.use('/api/vehiculos', vehiculoRoutes);
 
 app.get('/', (req, res) => {
     res.json({
@@ -21,16 +22,11 @@ app.get('/', (req, res) => {
         equipo: 'Grupo 08',
         rutas: [
             'POST /api/auth/registro',
-            'POST /api/auth/login'
+            'POST /api/auth/login',
+            'POST /api/vehiculos',
+            'GET /api/vehiculos/mis-vehiculos',
+            'GET /api/vehiculos/patente/:patente'
         ]
-    });
-});
-
-app.get('/test-db', (req, res) => {
-    const resultado = db.prepare('SELECT 1 + 1 AS resultado').get();
-    res.json({
-        mensaje: 'Base de datos conectada ✅',
-        resultado: resultado.resultado
     });
 });
 

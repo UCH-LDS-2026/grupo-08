@@ -1,54 +1,53 @@
-const db = require('../config/database');
+const Vehiculo = require('../models/vehiculoModel');
 
-// GET /vehiculos
-const listar = (req, res) => {
-  const vehiculos = db.prepare('SELECT * FROM vehiculos').all();
-  res.json(vehiculos);
+const vehiculoController = {
+
+    // Crear vehículo
+    crear: (req, res) => {
+        const { patente, vin, marca, modelo, anio, kilometraje } = req.body;
+        const dueno_id = req.usuario.id;
+
+        if (!patente || !marca || !modelo || !anio) {
+            return res.status(400).json({
+                error: 'Patente, marca, modelo y año son obligatorios'
+            });
+        }
+
+        const existe = Vehiculo.buscarPorPatente(patente);
+        if (existe) {
+            return res.status(400).json({
+                error: 'Ya existe un vehículo con esa patente'
+            });
+        }
+
+        const resultado = Vehiculo.crear(
+            patente, vin, marca, modelo, anio, kilometraje || 0, dueno_id
+        );
+
+        res.status(201).json({
+            mensaje: 'Vehículo registrado exitosamente ✅',
+            id: resultado.lastInsertRowid
+        });
+    },
+
+    // Obtener mis vehículos
+    misvehiculos: (req, res) => {
+        const dueno_id = req.usuario.id;
+        const vehiculos = Vehiculo.buscarPorDueno(dueno_id);
+        res.json({ vehiculos });
+    },
+
+    // Obtener vehículo por patente
+    buscarPorPatente: (req, res) => {
+        const { patente } = req.params;
+        const vehiculo = Vehiculo.buscarPorPatente(patente);
+
+        if (!vehiculo) {
+            return res.status(404).json({ error: 'Vehículo no encontrado' });
+        }
+
+        res.json({ vehiculo });
+    }
 };
 
-// GET /vehiculos/:patente
-const buscarPorPatente = (req, res) => {
-  const vehiculo = db.prepare('SELECT * FROM vehiculos WHERE patente = ?').get(req.params.patente);
-
-  if (!vehiculo) {
-    return res.status(404).json({ error: 'Vehículo no encontrado' });
-  }
-
-  res.json(vehiculo);
-};
-
-// POST /vehiculos
-const crear = (req, res) => {
-  const { patente, vin, marca, modelo, anio, kilometraje, dueno_id } = req.body;
-
-  if (!patente || !marca || !modelo || !anio || !dueno_id) {
-    return res.status(400).json({ error: 'Faltan datos obligatorios' });
-  }
-
-  try {
-    const stmt = db.prepare(`
-      INSERT INTO vehiculos (patente, vin, marca, modelo, anio, kilometraje, dueno_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `);
-    const resultado = stmt.run(patente, vin || null, marca, modelo, anio, kilometraje || 0, dueno_id);
-    res.status(201).json({ mensaje: 'Vehículo creado', id: resultado.lastInsertRowid });
-  } catch (error) {
-    res.status(400).json({ error: 'La patente ya existe' });
-  }
-};
-
-// PUT /vehiculos/:patente/kilometraje
-const actualizarKilometraje = (req, res) => {
-  const { kilometraje } = req.body;
-
-  const stmt = db.prepare('UPDATE vehiculos SET kilometraje = ? WHERE patente = ?');
-  const resultado = stmt.run(kilometraje, req.params.patente);
-
-  if (resultado.changes === 0) {
-    return res.status(404).json({ error: 'Vehículo no encontrado' });
-  }
-
-  res.json({ mensaje: 'Kilometraje actualizado' });
-};
-
-module.exports = { listar, buscarPorPatente, crear, actualizarKilometraje };
+module.exports = vehiculoController;
