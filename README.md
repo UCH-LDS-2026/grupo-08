@@ -1,11 +1,11 @@
-# HistoryCar
+# HistoryCar 🚗
+Ecosistema inteligente para la trazabilidad y gestión automotriz.
 
 #### Universidad Champagnat - Laboratorio de Desarrollo de Software - 2026
 
 ## Proyecto Final - Grupo N.º 8
 
 ### Integrantes
-
 - Ignacio Azzolina
 - Constantino Mateu
 - Arian Nuñez
@@ -34,14 +34,6 @@ HistoryCar busca centralizar y proteger esta información para reducir los punto
 
 ---
 
-## Solución propuesta
-
-La solución consiste en crear un **pasaporte digital del vehículo**, donde se registre su historial de mantenimiento, reparaciones, repuestos, siniestros, estado legal y demás datos relevantes.
-
-Cada vehículo estaría identificado de forma única mediante su número de chasis o VIN. De esta manera, el historial no dependería solamente del dueño actual, sino que acompañaría al vehículo durante toda su vida útil.
-
----
-
 ## Usuarios del sistema
 
 | Usuario | Necesidad principal |
@@ -53,90 +45,88 @@ Cada vehículo estaría identificado de forma única mediante su número de chas
 
 ---
 
-## Funcionalidades principales
+## Stack Tecnológico
 
-- **Trazabilidad 360° e identidad digital:** registro del historial del vehículo asociado permanentemente al número de chasis o VIN.
-- **Historial de mantenimiento:** carga y consulta de reparaciones, servicios realizados, repuestos utilizados y observaciones técnicas.
-- **Control de acceso basado en roles (RBAC):** permisos diferenciados para dueños, talleres, concesionarias y administradores.
-- **Registros técnicos validados:** solo talleres o entidades autorizadas podrían cargar o modificar información técnica sensible.
-- **Alertas de mantenimiento:** avisos preventivos para próximos servicios, vencimientos o controles recomendados.
-- **Sistema de reputación validado:** reseñas de talleres basadas en reparaciones efectivamente realizadas.
-- **Asistencia con inteligencia artificial:** uso futuro de agentes de IA para sugerir diagnósticos, procedimientos o alertas en base al historial del vehículo.
-
----
-
-## Alcance inicial del MVP
-
-Para una primera versión del proyecto, se propone desarrollar un MVP con las siguientes funcionalidades mínimas:
-
-1. Registro e inicio de sesión de usuarios.
-2. Alta, baja y modificación de vehículos.
-3. Asociación de vehículos a propietarios.
-4. Carga de mantenimientos y reparaciones por parte de talleres.
-5. Consulta del historial de un vehículo.
-6. Roles básicos: propietario, taller y administrador.
-7. Visualización simple del estado general del vehículo.
-
-Las funcionalidades avanzadas, como agentes de IA, integración con bases gubernamentales, reputación validada y automatizaciones con n8n, podrán incorporarse en etapas posteriores.
-
----
-
-## Stack tecnológico propuesto
-
-| Capa | Tecnología | Uso previsto |
+| Capa | Tecnología | Uso |
 |---|---|---|
-| Frontend web | React.js | Portal de gestión para talleres, concesionarias y administradores. |
-| Aplicación móvil | React Native | Aplicación para dueños de vehículos. |
-| Backend / BaaS | Supabase | Autenticación, base de datos, seguridad y APIs. |
-| Base de datos | PostgreSQL | Almacenamiento relacional de usuarios, vehículos, roles e historiales. |
-| Automatización | n8n | Flujos automáticos, alertas y notificaciones. |
-| Inteligencia Artificial | OpenAI / Gemini | Asistencia para diagnósticos, recomendaciones y análisis de historial. |
+| Backend | Node.js + Express.js | API REST |
+| Base de datos | SQLite (better-sqlite3) | Almacenamiento local |
+| Autenticación | JWT + bcryptjs | Sesiones stateless |
+
+### Justificación del Stack
+Se eligió Node.js con Express.js por su simplicidad para construir APIs REST y por el conocimiento previo del equipo en JavaScript. SQLite fue seleccionada como base de datos por su naturaleza serverless, eliminando la necesidad de configurar un servidor externo. JWT permite implementar autenticación stateless y segura, ideal para un sistema con múltiples roles.
+
+---
+
+## Requisitos previos
+- Node.js v18 o superior
+- npm v9 o superior
+- Git
+
+## Instalación
+
+### 1. Clonar el repositorio
+```bash
+git clone https://github.com/UCH-LDS-2026/grupo-08.git
+cd grupo-08
+```
+
+### 2. Instalar dependencias
+```bash
+npm install
+```
+
+### 3. Configurar variables de entorno
+```bash
+cp .env.example .env
+```
+Editar el archivo `.env` con sus valores.
+
+### 4. Iniciar el servidor
+```bash
+npm run dev
+```
+
+### 5. Verificar instalación
+Abrir en el navegador: `http://localhost:3000`
+
+---
+
+## Estrategia de Ramas
+- `main` — rama protegida, producción
+- `develop` — integración de features
+- `feature/*` — desarrollo de funcionalidades
+
+---
+
+## Rutas disponibles
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| POST | /api/auth/registro | Registrar usuario | No |
+| POST | /api/auth/login | Iniciar sesión | No |
+| POST | /api/vehiculos | Registrar vehículo | Sí |
+| GET | /api/vehiculos/mis-vehiculos | Ver mis vehículos | Sí |
+| GET | /api/vehiculos/patente/:patente | Buscar por patente | No |
+| POST | /api/historial | Agregar servicio | Sí |
+| GET | /api/historial/vehiculo/:id | Ver historial | No |
 
 ---
 
 ## Estructura del repositorio
 
-Estructura inicial sugerida para el proyecto:
-
 ```text
 grupo-08/
 │
-├── frontend/
-│   └── Aplicación web en React.js
+├── src/
+│   ├── config/         Base de datos
+│   ├── controllers/    Lógica de negocio
+│   ├── middleware/     Autenticación JWT
+│   ├── models/         Modelos de datos
+│   ├── routes/         Rutas de la API
+│   └── index.js        Punto de entrada
 │
-├── mobile/
-│   └── Aplicación móvil en React Native
-│
-├── backend/
-│   └── Configuraciones, servicios o integraciones del sistema
-│
-├── docs/
-│   └── Documentación funcional y técnica del proyecto
-│
-├── trabajos-practicos/
-│   └── Materiales y entregas de la materia
+├── trabajos-practicos/ Materiales y entregas de la materia
 │
 └── README.md
 ```
-
-> Nota: la estructura definitiva podrá modificarse a medida que avance el desarrollo del proyecto.
-
----
-
-## Cómo ejecutar el proyecto
-
-Actualmente el proyecto se encuentra en etapa inicial de análisis, documentación y definición funcional. La estructura ejecutable del sistema se incorporará progresivamente.
-
-Cuando el proyecto tenga una estructura técnica completa, los pasos generales serán:
-
-```bash
-git clone https://github.com/UCH-LDS-2026/grupo-08.git
-cd grupo-08
-npm install
-npm run dev
-```
-
-En caso de utilizar variables de entorno, se deberá crear un archivo `.env` a partir de un archivo de ejemplo `.env.example`, configurando las credenciales correspondientes de Supabase, APIs externas y servicios de automatización.
-
----
-

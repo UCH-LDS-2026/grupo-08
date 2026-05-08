@@ -1,5 +1,6 @@
 node_modules
 .env
+historycar.db
 __pycache__
 *.log
 dist
