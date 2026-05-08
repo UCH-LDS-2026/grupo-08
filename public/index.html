@@ -397,7 +397,7 @@
     document.getElementById('dashboard').style.display = 'block';
     document.getElementById('btn-logout').style.display = 'inline-block';
     document.getElementById('user-info').style.display = 'inline';
-    document.getElementById('user-info').textContent = `${usuarioActual.nombre} · ${usuarioActual.rol}`;
+    document.getElementById('user-info').textContent = `${usuarioActual.nombre} · ${formatRol(usuarioActual.rol)}`;
     cargarMisVehiculos();
     document.getElementById('hist-fecha').valueAsDate = new Date();
   }
@@ -512,6 +512,11 @@
   }
 
   // --- HELPERS ---
+  function formatRol(rol) {
+    const roles = { dueno: 'Dueño', taller: 'Taller', admin: 'Administrador' };
+    return roles[rol] || rol;
+  }
+
   function showAlert(id, msg, tipo) {
     document.getElementById(id).innerHTML = `<div class="alert alert-${tipo}">${msg}</div>`;
     setTimeout(() => document.getElementById(id).innerHTML = '', 4000);
