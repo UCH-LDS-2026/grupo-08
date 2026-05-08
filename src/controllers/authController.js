@@ -26,6 +26,14 @@ const authController = {
         // Encriptar la contraseña
         const passwordHash = bcrypt.hashSync(password, 10);
 
+        // Validar rol
+        const rolesValidos = ['dueno', 'taller', 'admin'];
+        if (!rolesValidos.includes(rol)) {
+            return res.status(400).json({
+                error: `Rol inválido. Los roles válidos son: ${rolesValidos.join(', ')}`
+            });
+        }
+
         // Guardar en la base de datos
         const resultado = Usuario.crear(nombre, email, passwordHash, rol);
 
