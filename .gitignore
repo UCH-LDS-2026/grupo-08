@@ -1,6 +1,10 @@
 node_modules
 .env
 historycar.db
+database.sqlite
+*.db
+*.sqlite
+*.sqlite3
 __pycache__
 *.log
 dist
