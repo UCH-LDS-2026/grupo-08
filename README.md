@@ -1,9 +1,11 @@
+# HistoryCar 🚗
+Ecosistema inteligente para la trazabilidad y gestión automotriz.
+
 #### Universidad Champagnat - Laboratorio de Desarrollo de Software - 2026
 
-# Proyecto Final: HistoryCar
-## Grupo N° 8
+## Grupo 08
 
-## Integrantes:
+### Integrantes
 - Ignacio Azzolina
 - Constantino Mateu
 - Arian Nuñez
@@ -14,24 +16,63 @@ El mercado automotriz sufre de "amnesia mecánica" y falta de transparencia. Al 
 
 ## Usuarios
 
-- **Dueños de vehículos (Consumidores finales):** Buscan tener el "pasaporte digital" de su auto siempre a mano, proteger su valor de reventa y recibir alertas tempranas de mantenimiento.
-- **Talleres mecánicos independientes:** Necesitan digitalizar sus órdenes de trabajo, fidelizar a sus clientes mediante la transparencia y optimizar tiempos utilizando asistencia de Inteligencia Artificial para diagnósticos complejos.
+- **Dueños de vehículos:** Buscan tener el "pasaporte digital" de su auto siempre a mano, proteger su valor de reventa y recibir alertas tempranas de mantenimiento.
+- **Talleres mecánicos independientes:** Necesitan digitalizar sus órdenes de trabajo, fidelizar a sus clientes mediante la transparencia y optimizar tiempos de diagnóstico.
 - **Concesionarias y Agencias:** Requieren historiales verificados para brindar garantías comprobables en la compra y venta de flotas o unidades usadas.
 
-## Funcionalidades principales
+## Stack Tecnológico
+- **Lenguaje:** JavaScript (Node.js)
+- **Framework:** Express.js
+- **Base de datos:** SQLite (better-sqlite3)
+- **Autenticación:** JWT + bcryptjs
 
-- **Trazabilidad 360° e Identidad Digital:** Registro inmutable del historial de mantenimiento, repuestos, siniestros y estado legal, vinculado permanentemente al número de chasis (VIN).
-- **Control de Acceso Basado en Roles (RBAC):** Sistema de seguridad donde únicamente los mecánicos y entidades certificadas tienen permisos para cargar o modificar registros técnicos en la plataforma.
-- **Ecosistema de Agentes de IA:** Asistentes autónomos que cruzan el historial del vehículo con manuales de taller para sugerir procedimientos al mecánico, y consultan bases gubernamentales para alertar al usuario sobre infracciones.
-- **Sistema de Reputación Validado:** Ranking de talleres impulsado por reseñas 100% verificadas, exclusivas para usuarios que efectivamente realizaron una reparación en dicho establecimiento.
+## Justificación del Stack
+Se eligió Node.js con Express.js por su simplicidad para construir APIs REST y por el conocimiento previo del equipo en JavaScript. SQLite fue seleccionada como base de datos por su naturaleza serverless, eliminando la necesidad de configurar un servidor de base de datos externo, lo que facilita la instalación y el desarrollo local. JWT permite implementar autenticación stateless y segura, ideal para un sistema con múltiples roles de usuario como HistoryCar.
 
-## Stack tecnológico
+## Requisitos previos
+- Node.js v18 o superior
+- npm v9 o superior
+- Git
 
-- **Frontend:** React.js (Portal web de gestión para talleres) y React Native (Aplicación móvil para dueños de vehículos).
-- **Backend y Base de Datos:** Supabase con PostgreSQL (para autenticación, gestión de bases de datos relacionales, políticas de seguridad y logs de auditoría) y n8n (para orquestación de flujos y automatización de alertas).
-- **Inteligencia Artificial:** APIs de modelos fundacionales (ej. Gemini / OpenAI) para el procesamiento de los Agentes de IA.
+## Instalación
 
-## Cómo ejecutar el proyecto
+### 1. Clonar el repositorio
+```bash
+git clone https://github.com/UCH-LDS-2026/grupo-08.git
+cd grupo-08
+```
 
-git clone [URL_DEL_REPOSITORIO]
-git clone [URL_DEL_REPOSITORIO]
+### 2. Instalar dependencias
+```bash
+npm install
+```
+
+### 3. Configurar variables de entorno
+```bash
+cp .env.example .env
+```
+Editar el archivo `.env` con sus valores.
+
+### 4. Iniciar el servidor
+```bash
+npm run dev
+```
+
+### 5. Verificar instalación
+Abrir en el navegador: `http://localhost:3000`
+
+## Estrategia de Ramas
+- `main` — rama protegida, producción
+- `develop` — integración de features
+- `feature/*` — desarrollo de funcionalidades
+
+## Rutas disponibles
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| POST | /api/auth/registro | Registrar usuario | No |
+| POST | /api/auth/login | Iniciar sesión | No |
+| POST | /api/vehiculos | Registrar vehículo | Sí |
+| GET | /api/vehiculos/mis-vehiculos | Ver mis vehículos | Sí |
+| GET | /api/vehiculos/patente/:patente | Buscar por patente | No |
+| POST | /api/historial | Agregar servicio | Sí |
+| GET | /api/historial/vehiculo/:id | Ver historial | No |
