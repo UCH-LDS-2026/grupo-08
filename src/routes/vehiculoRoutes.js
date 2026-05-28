@@ -6,6 +6,6 @@ const { verificarToken, verificarRoles } = require('../middlewares/authMiddlewar
 // Solo dueno o admin puede registrar vehículos
 router.post('/', verificarToken, verificarRoles(['dueno', 'admin']), vehiculoController.crear);
 router.get('/mis-vehiculos', verificarToken, vehiculoController.misvehiculos);
-router.get('/patente/:patente', vehiculoController.buscarPorPatente);
+router.get('/patente/:patente', verificarToken, vehiculoController.buscarPorPatente);
 
 module.exports = router;
