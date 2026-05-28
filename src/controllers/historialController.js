@@ -29,6 +29,7 @@ const historialController = {
         });
     },
 
+    // Buscar historial por ID de vehículo
     obtenerPorVehiculo: (req, res) => {
         const { vehiculo_id } = req.params;
 
@@ -38,10 +39,20 @@ const historialController = {
         }
 
         const historial = Historial.buscarPorVehiculo(vehiculo_id);
-        res.json({
-            vehiculo,
-            historial
-        });
+        res.json({ vehiculo, historial });
+    },
+
+    // Buscar historial por patente del vehículo
+    obtenerPorPatente: (req, res) => {
+        const patente = req.params.patente.trim().toUpperCase();
+
+        const vehiculo = Vehiculo.buscarPorPatente(patente);
+        if (!vehiculo) {
+            return res.status(404).json({ error: 'Vehículo no encontrado' });
+        }
+
+        const historial = Historial.buscarPorVehiculo(vehiculo.id);
+        res.json({ vehiculo, historial });
     }
 };
 
