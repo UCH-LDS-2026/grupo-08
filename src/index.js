@@ -2,6 +2,12 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
+if (!process.env.JWT_SECRET) {
+    console.error('ERROR: JWT_SECRET no está definido en las variables de entorno.');
+    console.error('Copiá el archivo .env.example a .env y configurá las variables.');
+    process.exit(1);
+}
+
 const db = require('./config/database');
 const authRoutes = require('./routes/authRoutes');
 const vehiculoRoutes = require('./routes/vehiculoRoutes');

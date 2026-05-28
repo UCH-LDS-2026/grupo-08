@@ -231,7 +231,7 @@
       <div class="nav-tab active" onclick="switchPanel('mis-vehiculos')">Mis Vehículos</div>
       <div class="nav-tab" onclick="switchPanel('buscar')">Buscar por Patente</div>
       <div class="nav-tab" onclick="switchPanel('historial')">Historial</div>
-      <div class="nav-tab" onclick="switchPanel('agregar-vehiculo')">+ Agregar Vehículo</div>
+      <div id="tab-agregar-vehiculo" class="nav-tab" onclick="switchPanel('agregar-vehiculo')">+ Agregar Vehículo</div>
     </div>
 
     <!-- Panel: Mis Vehículos -->
@@ -264,7 +264,7 @@
         </div>
         <div id="resultado-historial"></div>
       </div>
-      <div class="card">
+      <div id="card-agregar-historial" class="card">
         <h3>Agregar servicio al historial</h3>
         <div id="historial-alert"></div>
         <div class="grid-2">
@@ -321,8 +321,8 @@
             <input type="number" id="veh-anio" placeholder="2020" />
           </div>
           <div class="form-group">
-            <label>Color</label>
-            <input type="text" id="veh-color" placeholder="Blanco" />
+            <label>Kilometraje actual</label>
+            <input type="number" id="veh-kilometraje" placeholder="0" />
           </div>
         </div>
         <button class="btn btn-success" onclick="agregarVehiculo()">Registrar vehículo</button>
@@ -398,6 +398,15 @@
     document.getElementById('btn-logout').style.display = 'inline-block';
     document.getElementById('user-info').style.display = 'inline';
     document.getElementById('user-info').textContent = `${usuarioActual.nombre} · ${formatRol(usuarioActual.rol)}`;
+
+    // Mostrar "Agregar Vehículo" solo para dueño o admin
+    const puedeAgregarVehiculo = ['dueno', 'admin'].includes(usuarioActual.rol);
+    document.getElementById('tab-agregar-vehiculo').style.display = puedeAgregarVehiculo ? '' : 'none';
+
+    // Mostrar "Agregar servicio al historial" solo para taller o admin
+    const puedeCargarHistorial = ['taller', 'admin'].includes(usuarioActual.rol);
+    document.getElementById('card-agregar-historial').style.display = puedeCargarHistorial ? '' : 'none';
+
     cargarMisVehiculos();
     document.getElementById('hist-fecha').valueAsDate = new Date();
   }
@@ -415,18 +424,18 @@
     const res = await fetch(`${API}/vehiculos/mis-vehiculos`, { headers: { Authorization: `Bearer ${token}` } });
     const data = await res.json();
     const lista = document.getElementById('lista-vehiculos');
-    if (!data.length) return lista.innerHTML = '<div class="empty">No tenés vehículos registrados aún.</div>';
+    if (!data.vehiculos || !data.vehiculos.length) return lista.innerHTML = '<div class="empty">No tenés vehículos registrados aún.</div>';
     lista.innerHTML = `
       <table>
-        <thead><tr><th>ID</th><th>Patente</th><th>Marca</th><th>Modelo</th><th>Año</th><th>Color</th></tr></thead>
+        <thead><tr><th>ID</th><th>Patente</th><th>Marca</th><th>Modelo</th><th>Año</th><th>Kilometraje</th></tr></thead>
         <tbody>
-          ${data.map(v => `<tr>
+          ${data.vehiculos.map(v => `<tr>
             <td>${v.id}</td>
             <td><strong>${v.patente}</strong></td>
             <td>${v.marca}</td>
             <td>${v.modelo}</td>
             <td>${v.anio || '-'}</td>
-            <td>${v.color || '-'}</td>
+            <td>${v.kilometraje !== undefined ? v.kilometraje + ' km' : '-'}</td>
           </tr>`).join('')}
         </tbody>
       </table>`;
@@ -438,7 +447,7 @@
       marca: document.getElementById('veh-marca').value,
       modelo: document.getElementById('veh-modelo').value,
       anio: parseInt(document.getElementById('veh-anio').value),
-      color: document.getElementById('veh-color').value
+      kilometraje: parseInt(document.getElementById('veh-kilometraje').value) || 0
     };
     try {
       const res = await fetch(`${API}/vehiculos`, {
@@ -448,7 +457,7 @@
       const data = await res.json();
       if (!res.ok) return showAlert('vehiculo-alert', data.error, 'error');
       showAlert('vehiculo-alert', `Vehículo ${body.patente} registrado exitosamente`, 'success');
-      ['veh-patente','veh-marca','veh-modelo','veh-anio','veh-color'].forEach(id => document.getElementById(id).value = '');
+      ['veh-patente','veh-marca','veh-modelo','veh-anio','veh-kilometraje'].forEach(id => document.getElementById(id).value = '');
       cargarMisVehiculos();
     } catch { showAlert('vehiculo-alert', 'Error de conexión', 'error'); }
   }
@@ -460,17 +469,18 @@
     const data = await res.json();
     const div = document.getElementById('resultado-busqueda');
     if (!res.ok) return div.innerHTML = `<div class="alert alert-error">${data.error}</div>`;
+    const v = data.vehiculo;
     div.innerHTML = `
       <table>
-        <thead><tr><th>ID</th><th>Patente</th><th>Marca</th><th>Modelo</th><th>Año</th><th>Color</th><th>Dueño ID</th></tr></thead>
+        <thead><tr><th>ID</th><th>Patente</th><th>Marca</th><th>Modelo</th><th>Año</th><th>Kilometraje</th><th>Dueño ID</th></tr></thead>
         <tbody><tr>
-          <td>${data.id}</td>
-          <td><strong>${data.patente}</strong></td>
-          <td>${data.marca}</td>
-          <td>${data.modelo}</td>
-          <td>${data.anio || '-'}</td>
-          <td>${data.color || '-'}</td>
-          <td>${data.usuario_id}</td>
+          <td>${v.id}</td>
+          <td><strong>${v.patente}</strong></td>
+          <td>${v.marca}</td>
+          <td>${v.modelo}</td>
+          <td>${v.anio || '-'}</td>
+          <td>${v.kilometraje !== undefined ? v.kilometraje + ' km' : '-'}</td>
+          <td>${v.dueno_id}</td>
         </tr></tbody>
       </table>`;
   }
@@ -482,22 +492,22 @@
     const res = await fetch(`${API}/historial/vehiculo/${id}`);
     const data = await res.json();
     const div = document.getElementById('resultado-historial');
-    if (!res.ok || !data.length) return div.innerHTML = '<div class="empty">No hay historial para este vehículo.</div>';
-    div.innerHTML = data.map(h => `
+    if (!res.ok || !data.historial || !data.historial.length) return div.innerHTML = '<div class="empty">No hay historial para este vehículo.</div>';
+    div.innerHTML = data.historial.map(h => `
       <div class="historial-item">
-        <div class="tipo">${h.tipo}</div>
-        <div class="desc">${h.descripcion}</div>
-        <div class="meta">📅 ${h.fecha} &nbsp;·&nbsp; 🛣️ ${h.kilometraje ? h.kilometraje + ' km' : 'N/A'}</div>
+        <div class="tipo">${h.tipo_servicio}</div>
+        <div class="desc">${h.descripcion || '-'}</div>
+        <div class="meta">📅 ${h.fecha_servicio} &nbsp;·&nbsp; 🛣️ ${h.kilometraje_servicio ? h.kilometraje_servicio + ' km' : 'N/A'} &nbsp;·&nbsp; 🔧 ${h.nombre_taller}</div>
       </div>`).join('');
   }
 
   async function agregarHistorial() {
     const body = {
       vehiculo_id: parseInt(document.getElementById('hist-vehiculo-id').value),
-      tipo: document.getElementById('hist-tipo').value,
+      tipo_servicio: document.getElementById('hist-tipo').value,
       descripcion: document.getElementById('hist-descripcion').value,
-      fecha: document.getElementById('hist-fecha').value,
-      kilometraje: parseInt(document.getElementById('hist-kilometraje').value)
+      fecha_servicio: document.getElementById('hist-fecha').value,
+      kilometraje_servicio: parseInt(document.getElementById('hist-kilometraje').value)
     };
     try {
       const res = await fetch(`${API}/historial`, {
