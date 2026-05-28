@@ -4,7 +4,9 @@ const vehiculoController = {
 
     // Crear vehículo
     crear: (req, res) => {
-        const { patente, vin, marca, modelo, anio, kilometraje } = req.body;
+        const { vin, marca, modelo, anio, kilometraje } = req.body;
+        // Normalizar patente: sin espacios y en mayúsculas
+        const patente = (req.body.patente || '').trim().toUpperCase();
         const dueno_id = req.usuario.id;
 
         if (!patente || !marca || !modelo || !anio) {
@@ -37,10 +39,10 @@ const vehiculoController = {
         res.json({ vehiculos });
     },
 
-    // Obtener vehículo por patente
+    // Obtener vehículo por patente incluyendo datos del dueño
     buscarPorPatente: (req, res) => {
-        const { patente } = req.params;
-        const vehiculo = Vehiculo.buscarPorPatente(patente);
+        const patente = req.params.patente.trim().toUpperCase();
+        const vehiculo = Vehiculo.buscarPorPatenteConDueno(patente);
 
         if (!vehiculo) {
             return res.status(404).json({ error: 'Vehículo no encontrado' });

@@ -259,7 +259,7 @@
       <div class="card">
         <h3>Ver historial de vehículo</h3>
         <div class="search-row" style="margin-bottom:20px;">
-          <input type="number" id="input-vehiculo-id" placeholder="ID del vehículo" />
+          <input type="text" id="input-vehiculo-id" placeholder="Ej: 1 (ID) o ABC123 (patente)" style="text-transform:uppercase;" />
           <button class="btn btn-sm" onclick="verHistorial()">Ver historial</button>
         </div>
         <div id="resultado-historial"></div>
@@ -443,7 +443,7 @@
 
   async function agregarVehiculo() {
     const body = {
-      patente: document.getElementById('veh-patente').value.toUpperCase(),
+      patente: document.getElementById('veh-patente').value.trim().toUpperCase(),
       marca: document.getElementById('veh-marca').value,
       modelo: document.getElementById('veh-modelo').value,
       anio: parseInt(document.getElementById('veh-anio').value),
@@ -472,7 +472,7 @@
     const v = data.vehiculo;
     div.innerHTML = `
       <table>
-        <thead><tr><th>ID</th><th>Patente</th><th>Marca</th><th>Modelo</th><th>Año</th><th>Kilometraje</th><th>Dueño ID</th></tr></thead>
+        <thead><tr><th>ID</th><th>Patente</th><th>Marca</th><th>Modelo</th><th>Año</th><th>Kilometraje</th><th>Cliente</th><th>Correo</th></tr></thead>
         <tbody><tr>
           <td>${v.id}</td>
           <td><strong>${v.patente}</strong></td>
@@ -480,20 +480,35 @@
           <td>${v.modelo}</td>
           <td>${v.anio || '-'}</td>
           <td>${v.kilometraje !== undefined ? v.kilometraje + ' km' : '-'}</td>
-          <td>${v.dueno_id}</td>
+          <td>${v.dueno_nombre}</td>
+          <td>${v.dueno_email}</td>
         </tr></tbody>
       </table>`;
   }
 
   // --- HISTORIAL ---
   async function verHistorial() {
-    const id = document.getElementById('input-vehiculo-id').value;
-    if (!id) return;
-    const res = await fetch(`${API}/historial/vehiculo/${id}`);
+    const valor = document.getElementById('input-vehiculo-id').value.trim();
+    if (!valor) return;
+    // Si es solo dígitos → buscar por ID; si tiene letras → buscar por patente
+    const url = /^\d+$/.test(valor)
+      ? `${API}/historial/vehiculo/${valor}`
+      : `${API}/historial/patente/${valor.toUpperCase()}`;
+    const res = await fetch(url);
     const data = await res.json();
     const div = document.getElementById('resultado-historial');
-    if (!res.ok || !data.historial || !data.historial.length) return div.innerHTML = '<div class="empty">No hay historial para este vehículo.</div>';
-    div.innerHTML = data.historial.map(h => `
+    if (!res.ok) return div.innerHTML = `<div class="alert alert-error">${data.error}</div>`;
+    const veh = data.vehiculo;
+    const filaVehiculo = `
+      <div style="margin-bottom:14px;padding:12px 16px;background:#eef0f5;border-radius:8px;font-size:0.9rem;">
+        <strong>ID ${veh.id} · ${veh.patente}</strong> &nbsp;|&nbsp;
+        ${veh.marca} ${veh.modelo} ${veh.anio} &nbsp;|&nbsp;
+        🛣️ ${veh.kilometraje} km
+      </div>`;
+    if (!data.historial || !data.historial.length) {
+      return div.innerHTML = filaVehiculo + '<div class="empty">No hay historial para este vehículo.</div>';
+    }
+    div.innerHTML = filaVehiculo + data.historial.map(h => `
       <div class="historial-item">
         <div class="tipo">${h.tipo_servicio}</div>
         <div class="desc">${h.descripcion || '-'}</div>
