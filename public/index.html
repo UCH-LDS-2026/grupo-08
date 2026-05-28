@@ -232,6 +232,7 @@
       <div class="nav-tab" onclick="switchPanel('buscar')">Buscar por Patente</div>
       <div class="nav-tab" onclick="switchPanel('historial')">Historial</div>
       <div id="tab-agregar-vehiculo" class="nav-tab" onclick="switchPanel('agregar-vehiculo')">+ Agregar Vehículo</div>
+      <div class="nav-tab" onclick="switchPanel('cambiar-password')">Cambiar contraseña</div>
     </div>
 
     <!-- Panel: Mis Vehículos -->
@@ -295,6 +296,27 @@
           <input type="text" id="hist-descripcion" placeholder="Cambio de aceite y filtros" />
         </div>
         <button class="btn" onclick="agregarHistorial()">Guardar servicio</button>
+      </div>
+    </div>
+
+    <!-- Panel: Cambiar contraseña -->
+    <div id="panel-cambiar-password" class="panel">
+      <div class="card">
+        <h3>Cambiar contraseña</h3>
+        <div id="cambiar-password-alert"></div>
+        <div class="form-group">
+          <label>Contraseña actual</label>
+          <input type="password" id="cp-actual" placeholder="••••••" />
+        </div>
+        <div class="form-group">
+          <label>Nueva contraseña</label>
+          <input type="password" id="cp-nueva" placeholder="••••••" />
+        </div>
+        <div class="form-group">
+          <label>Confirmar nueva contraseña</label>
+          <input type="password" id="cp-confirmar" placeholder="••••••" />
+        </div>
+        <button class="btn" onclick="cambiarPassword()">Actualizar contraseña</button>
       </div>
     </div>
 
@@ -534,6 +556,39 @@
       showAlert('historial-alert', 'Servicio registrado exitosamente', 'success');
       ['hist-vehiculo-id','hist-descripcion','hist-kilometraje'].forEach(id => document.getElementById(id).value = '');
     } catch { showAlert('historial-alert', 'Error de conexión', 'error'); }
+  }
+
+  // --- CAMBIO DE CONTRASEÑA ---
+  async function cambiarPassword() {
+    const passwordActual = document.getElementById('cp-actual').value;
+    const passwordNueva = document.getElementById('cp-nueva').value;
+    const confirmarPasswordNueva = document.getElementById('cp-confirmar').value;
+
+    if (!passwordActual || !passwordNueva || !confirmarPasswordNueva) {
+      return showAlert('cambiar-password-alert', 'Todos los campos son obligatorios', 'error');
+    }
+    if (passwordNueva !== confirmarPasswordNueva) {
+      return showAlert('cambiar-password-alert', 'La nueva contraseña y la confirmación no coinciden', 'error');
+    }
+    if (passwordNueva.length < 6) {
+      return showAlert('cambiar-password-alert', 'La contraseña debe tener al menos 6 caracteres', 'error');
+    }
+
+    try {
+      const res = await fetch(`${API}/auth/cambiar-password`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ passwordActual, passwordNueva, confirmarPasswordNueva })
+      });
+      const data = await res.json();
+      if (!res.ok) return showAlert('cambiar-password-alert', data.error, 'error');
+      showAlert('cambiar-password-alert', 'Contraseña actualizada correctamente', 'success');
+      document.getElementById('cp-actual').value = '';
+      document.getElementById('cp-nueva').value = '';
+      document.getElementById('cp-confirmar').value = '';
+    } catch {
+      showAlert('cambiar-password-alert', 'Error de conexión con el servidor', 'error');
+    }
   }
 
   // --- HELPERS ---

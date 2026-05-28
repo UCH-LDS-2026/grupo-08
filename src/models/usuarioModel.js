@@ -26,6 +26,23 @@ const Usuario = {
             FROM usuarios WHERE id = ?
         `);
         return query.get(id);
+    },
+
+    // Buscar usuario por id incluyendo password (solo para login o cambio de contraseña)
+    buscarPorIdConPassword: (id) => {
+        const query = db.prepare(`
+            SELECT id, nombre, email, rol, password
+            FROM usuarios WHERE id = ?
+        `);
+        return query.get(id);
+    },
+
+    // Actualizar la contraseña de un usuario
+    actualizarPassword: (id, passwordHash) => {
+        const query = db.prepare(`
+            UPDATE usuarios SET password = ? WHERE id = ?
+        `);
+        return query.run(passwordHash, id);
     }
 };
 
