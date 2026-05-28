@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const vehiculoController = require('../controllers/vehiculoController');
-const verificarToken = require('../middlewares/authMiddleware');
+const { verificarToken, verificarRoles } = require('../middlewares/authMiddleware');
 
-// Todas estas rutas requieren token
-router.post('/', verificarToken, vehiculoController.crear);
+// Solo dueno o admin puede registrar vehículos
+router.post('/', verificarToken, verificarRoles(['dueno', 'admin']), vehiculoController.crear);
 router.get('/mis-vehiculos', verificarToken, vehiculoController.misvehiculos);
 router.get('/patente/:patente', vehiculoController.buscarPorPatente);
 
