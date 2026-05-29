@@ -804,3 +804,203 @@ tr:hover td { background: #fafafa; }
   .vic-spec { border-right: none; border-bottom: 1px solid #f1f5f9; }
   .vic-spec:last-child { border-bottom: none; }
 }
+
+/* ============================================================
+   HISTORIAL — Timeline (Etapa 5)
+   ============================================================ */
+
+/* Encabezado compacto del vehículo sobre el timeline */
+.historial-vehicle-header {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hvh-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hvh-plate {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e1b4b;
+  letter-spacing: 0.08em;
+}
+
+.hvh-info {
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.hvh-km {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #475569;
+  background: #f1f5f9;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+/* Contador de registros */
+.historial-count {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 12px;
+}
+
+/* Timeline */
+.service-timeline {
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-item {
+  display: flex;
+  gap: 14px;
+}
+
+.timeline-dot-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 16px;
+  padding-top: 18px;
+}
+
+.timeline-dot {
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  background: #00687a;
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.timeline-connector {
+  flex: 1;
+  width: 2px;
+  background: #e2e8f0;
+  margin-top: 3px;
+  min-height: 16px;
+}
+
+.timeline-item:last-child .timeline-connector { background: transparent; }
+
+.timeline-content {
+  flex: 1;
+  padding-bottom: 14px;
+  min-width: 0;
+}
+
+.timeline-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 13px 16px;
+  transition: box-shadow 0.15s;
+}
+.timeline-card:hover { box-shadow: 0 2px 10px rgba(30,27,75,0.07); }
+
+.timeline-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.timeline-date-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.timeline-km-chip {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #475569;
+  background: #f1f5f9;
+  padding: 2px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+/* Badges de tipo de servicio */
+.timeline-type-badge {
+  font-size: 0.63rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.timeline-type-badge.badge-service    { background: #dbeafe; color: #1d4ed8; }
+.timeline-type-badge.badge-reparacion { background: #fce7f3; color: #9d174d; }
+.timeline-type-badge.badge-inspeccion { background: #fef3c7; color: #b45309; }
+.timeline-type-badge.badge-siniestro  { background: #fee2e2; color: #dc2626; }
+.timeline-type-badge.badge-default    { background: #f1f5f9; color: #475569; }
+
+.timeline-service-desc {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0b1c30;
+  margin-bottom: 6px;
+}
+
+.timeline-taller-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+.timeline-taller-row svg { pointer-events: none; flex-shrink: 0; }
+
+.timeline-end {
+  font-size: 0.72rem;
+  color: #b0b8c4;
+  text-align: center;
+  padding: 10px 0 4px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Formulario de carga de historial */
+.historial-form-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 8px;
+  border-top: 3px solid #00687a;
+}
+
+.historial-form-card h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0b1c30;
+  margin-bottom: 4px;
+}
+
+.historial-form-subtitle {
+  font-size: 0.82rem;
+  color: #64748b;
+  margin-bottom: 20px;
+}

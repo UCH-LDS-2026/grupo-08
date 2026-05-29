@@ -232,16 +232,26 @@
         <!-- Panel: Historial -->
         <div id="panel-historial" class="panel">
           <p class="section-title">Historial de servicios</p>
-          <p class="section-subtitle">Consultá el historial por ID de vehículo o patente.</p>
-          <div class="card">
-            <div class="search-row" style="margin-bottom:20px;">
-              <input type="text" id="input-vehiculo-id" placeholder="Ej: 1 (ID) o ABC123 (patente)" style="text-transform:uppercase;" />
-              <button class="btn btn-sm" onclick="verHistorial()">Ver historial</button>
+          <p class="section-subtitle">Consultá el historial ingresando el ID del vehículo o su patente.</p>
+
+          <div class="search-box-panel">
+            <div class="search-input-wrap">
+              <span class="search-icon-inline">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+              </span>
+              <input type="text" id="input-vehiculo-id" class="search-input-lg" placeholder="ID del vehículo (ej: 1) o patente (ej: ABC123)" style="text-transform:uppercase;" />
             </div>
-            <div id="resultado-historial"></div>
+            <button class="btn-search" onclick="verHistorial()">Ver historial</button>
           </div>
-          <div id="card-agregar-historial" class="card">
-            <h3>Agregar servicio al historial</h3>
+
+          <div id="resultado-historial"></div>
+
+          <!-- Formulario de carga — visible solo para taller/admin -->
+          <div id="card-agregar-historial" class="historial-form-card">
+            <h3>Registrar servicio</h3>
+            <p class="historial-form-subtitle">Cargá un nuevo servicio al historial del vehículo.</p>
             <div id="historial-alert"></div>
             <div class="grid-2">
               <div class="form-group">
@@ -249,7 +259,7 @@
                 <input type="number" id="hist-vehiculo-id" placeholder="1" />
               </div>
               <div class="form-group">
-                <label>Tipo</label>
+                <label>Tipo de servicio</label>
                 <select id="hist-tipo">
                   <option value="service">Service</option>
                   <option value="reparacion">Reparación</option>
@@ -267,8 +277,8 @@
               </div>
             </div>
             <div class="form-group">
-              <label>Descripción</label>
-              <input type="text" id="hist-descripcion" placeholder="Cambio de aceite y filtros" />
+              <label>Descripción del servicio</label>
+              <input type="text" id="hist-descripcion" placeholder="Ej: Cambio de aceite y filtros" />
             </div>
             <button class="btn" onclick="agregarHistorial()">Guardar servicio</button>
           </div>

@@ -170,7 +170,9 @@ async function buscarPatente() {
   const div = document.getElementById('resultado-busqueda');
   if (!res.ok) return div.innerHTML = `<div class="alert alert-error">${data.error}</div>`;
   const v = data.vehiculo;
-  const ownerInitial = v.dueno_nombre ? v.dueno_nombre.charAt(0).toUpperCase() : '?';
+  const ownerNombre  = v.dueno_nombre  || '—';
+  const ownerEmail   = v.dueno_email   || '—';
+  const ownerInitial = v.dueno_nombre  ? v.dueno_nombre.charAt(0).toUpperCase() : '?';
   const km = v.kilometraje !== undefined ? Number(v.kilometraje).toLocaleString('es-AR') + ' km' : '—';
   div.innerHTML = `
     <div class="vehicle-identity-card">
@@ -191,8 +193,8 @@ async function buscarPatente() {
         <div class="vic-owner-avatar">${ownerInitial}</div>
         <div class="vic-owner-info">
           <div class="vic-owner-label">Propietario registrado</div>
-          <div class="vic-owner-name">${v.dueno_nombre}</div>
-          <div class="vic-owner-email">${v.dueno_email}</div>
+          <div class="vic-owner-name">${ownerNombre}</div>
+          <div class="vic-owner-email">${ownerEmail}</div>
         </div>
       </div>
     </div>`;
@@ -211,21 +213,61 @@ async function verHistorial() {
   const div = document.getElementById('resultado-historial');
   if (!res.ok) return div.innerHTML = `<div class="alert alert-error">${data.error}</div>`;
   const veh = data.vehiculo;
-  const filaVehiculo = `
-    <div style="margin-bottom:14px;padding:12px 16px;background:#eef0f5;border-radius:8px;font-size:0.9rem;">
-      <strong>ID ${veh.id} · ${veh.patente}</strong> &nbsp;|&nbsp;
-      ${veh.marca} ${veh.modelo} ${veh.anio} &nbsp;|&nbsp;
-      🛣️ ${veh.kilometraje} km
+  const km = veh.kilometraje !== undefined ? Number(veh.kilometraje).toLocaleString('es-AR') + ' km' : '—';
+
+  const vehicleHeader = `
+    <div class="historial-vehicle-header">
+      <div class="hvh-left">
+        <span class="hvh-plate">${veh.patente}</span>
+        <span class="hvh-info">${veh.marca} ${veh.modelo}${veh.anio ? ' · ' + veh.anio : ''}</span>
+      </div>
+      <span class="hvh-km">${km}</span>
     </div>`;
+
   if (!data.historial || !data.historial.length) {
-    return div.innerHTML = filaVehiculo + '<div class="empty">No hay historial para este vehículo.</div>';
+    return div.innerHTML = vehicleHeader +
+      '<div class="empty">Este vehículo no tiene servicios registrados aún.</div>';
   }
-  div.innerHTML = filaVehiculo + data.historial.map(h => `
-    <div class="historial-item">
-      <div class="tipo">${h.tipo_servicio}</div>
-      <div class="desc">${h.descripcion || '-'}</div>
-      <div class="meta">📅 ${h.fecha_servicio} &nbsp;·&nbsp; 🛣️ ${h.kilometraje_servicio ? h.kilometraje_servicio + ' km' : 'N/A'} &nbsp;·&nbsp; 🔧 ${h.nombre_taller}</div>
-    </div>`).join('');
+
+  const tipoBadge = { service: 'badge-service', reparacion: 'badge-reparacion', inspeccion: 'badge-inspeccion', siniestro: 'badge-siniestro' };
+
+  const timelineHTML = `
+    <div class="historial-count">${data.historial.length} registro${data.historial.length !== 1 ? 's' : ''} encontrado${data.historial.length !== 1 ? 's' : ''}</div>
+    <div class="service-timeline">
+      ${data.historial.map(h => {
+        const badgeClass = tipoBadge[h.tipo_servicio] || 'badge-default';
+        const kmServ = h.kilometraje_servicio ? Number(h.kilometraje_servicio).toLocaleString('es-AR') + ' km' : '—';
+        const desc = h.descripcion || '—';
+        const taller = h.nombre_taller || '—';
+        return `
+          <div class="timeline-item">
+            <div class="timeline-dot-col">
+              <div class="timeline-dot"></div>
+              <div class="timeline-connector"></div>
+            </div>
+            <div class="timeline-content">
+              <div class="timeline-card">
+                <div class="timeline-card-top">
+                  <div class="timeline-date-row">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    ${h.fecha_servicio}
+                    <span class="timeline-km-chip">${kmServ}</span>
+                  </div>
+                  <span class="timeline-type-badge ${badgeClass}">${h.tipo_servicio}</span>
+                </div>
+                <div class="timeline-service-desc">${desc}</div>
+                <div class="timeline-taller-row">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                  ${taller}
+                </div>
+              </div>
+            </div>
+          </div>`;
+      }).join('')}
+    </div>
+    <div class="timeline-end">— fin del historial —</div>`;
+
+  div.innerHTML = vehicleHeader + timelineHTML;
 }
 
 async function agregarHistorial() {
