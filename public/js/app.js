@@ -89,7 +89,9 @@ function switchPanel(id) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById(`panel-${id}`).classList.add('active');
-  event.target.classList.add('active');
+  // data-panel evita depender de event.target que puede apuntar a SVG u otro hijo
+  const navItem = document.querySelector(`.nav-tab[data-panel="${id}"]`);
+  if (navItem) navItem.classList.add('active');
   // En mobile cerrar sidebar al navegar
   const sidebar = document.getElementById('sidebar');
   const overlay = document.getElementById('sidebar-overlay');
@@ -110,21 +112,33 @@ async function cargarMisVehiculos() {
   const res = await fetch(`${API}/vehiculos/mis-vehiculos`, { headers: { Authorization: `Bearer ${token}` } });
   const data = await res.json();
   const lista = document.getElementById('lista-vehiculos');
-  if (!data.vehiculos || !data.vehiculos.length) return lista.innerHTML = '<div class="empty">No tenés vehículos registrados aún.</div>';
+  if (!data.vehiculos || !data.vehiculos.length) {
+    return lista.innerHTML = '<div class="empty">No tenés vehículos registrados aún.</div>';
+  }
   lista.innerHTML = `
-    <table>
-      <thead><tr><th>ID</th><th>Patente</th><th>Marca</th><th>Modelo</th><th>Año</th><th>Kilometraje</th></tr></thead>
-      <tbody>
-        ${data.vehiculos.map(v => `<tr>
-          <td>${v.id}</td>
-          <td><strong>${v.patente}</strong></td>
-          <td>${v.marca}</td>
-          <td>${v.modelo}</td>
-          <td>${v.anio || '-'}</td>
-          <td>${v.kilometraje !== undefined ? v.kilometraje + ' km' : '-'}</td>
-        </tr>`).join('')}
-      </tbody>
-    </table>`;
+    <div class="vehicles-grid">
+      ${data.vehiculos.map(v => `
+        <div class="vehicle-card">
+          <div class="vehicle-card-header">
+            <span class="vehicle-plate">${v.patente}</span>
+            <span class="vehicle-id-badge">ID #${v.id}</span>
+          </div>
+          <div class="vehicle-card-body">
+            <div class="vehicle-model">${v.marca} ${v.modelo}</div>
+            <div class="vehicle-meta">
+              <span class="vehicle-meta-item">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                ${v.anio || '—'}
+              </span>
+              <span class="vehicle-meta-item">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+                ${v.kilometraje !== undefined ? Number(v.kilometraje).toLocaleString('es-AR') + ' km' : '—'}
+              </span>
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>`;
 }
 
 async function agregarVehiculo() {

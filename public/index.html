@@ -137,7 +137,7 @@
       <!-- Navegación -->
       <nav class="sidebar-nav">
 
-        <div class="nav-tab active" onclick="switchPanel('mis-vehiculos')">
+        <div class="nav-tab active" data-panel="mis-vehiculos" onclick="switchPanel('mis-vehiculos')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l2-3h8l2 3h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/>
             <circle cx="7.5" cy="17.5" r="1.5"/>
@@ -146,7 +146,7 @@
           Mis Vehículos
         </div>
 
-        <div class="nav-tab" onclick="switchPanel('buscar')">
+        <div class="nav-tab" data-panel="buscar" onclick="switchPanel('buscar')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"/>
             <line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -154,7 +154,7 @@
           Buscar por Patente
         </div>
 
-        <div class="nav-tab" onclick="switchPanel('historial')">
+        <div class="nav-tab" data-panel="historial" onclick="switchPanel('historial')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"/>
             <polyline points="12,6 12,12 16,14"/>
@@ -163,7 +163,7 @@
         </div>
 
         <!-- Visible solo para dueno/admin — controlado por JS -->
-        <div id="tab-agregar-vehiculo" class="nav-tab" onclick="switchPanel('agregar-vehiculo')">
+        <div id="tab-agregar-vehiculo" class="nav-tab" data-panel="agregar-vehiculo" onclick="switchPanel('agregar-vehiculo')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"/>
             <line x1="12" y1="8" x2="12" y2="16"/>
@@ -172,7 +172,7 @@
           Agregar Vehículo
         </div>
 
-        <div class="nav-tab" onclick="switchPanel('cambiar-password')">
+        <div class="nav-tab" data-panel="cambiar-password" onclick="switchPanel('cambiar-password')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
             <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
