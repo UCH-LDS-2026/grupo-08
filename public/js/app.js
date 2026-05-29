@@ -74,6 +74,14 @@ function mostrarDashboard() {
 
   cargarMisVehiculos();
   document.getElementById('hist-fecha').valueAsDate = new Date();
+
+  // Sidebar: poblar iniciales, nombre y badge de rol
+  const _ini = document.getElementById('sidebar-initials');
+  const _nom = document.getElementById('sidebar-name');
+  const _rol = document.getElementById('sidebar-role');
+  if (_ini) _ini.textContent = usuarioActual.nombre.charAt(0).toUpperCase();
+  if (_nom) _nom.textContent = usuarioActual.nombre;
+  if (_rol) { _rol.textContent = formatRol(usuarioActual.rol); _rol.className = 'sidebar-role-badge role-' + usuarioActual.rol; }
 }
 
 // --- NAVEGACIÓN ---
@@ -82,6 +90,19 @@ function switchPanel(id) {
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById(`panel-${id}`).classList.add('active');
   event.target.classList.add('active');
+  // En mobile cerrar sidebar al navegar
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  if (sidebar) sidebar.classList.remove('open');
+  if (overlay) overlay.classList.remove('show');
+}
+
+// --- SIDEBAR MOBILE ---
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  if (sidebar) sidebar.classList.toggle('open');
+  if (overlay) overlay.classList.toggle('show');
 }
 
 // --- VEHÍCULOS ---

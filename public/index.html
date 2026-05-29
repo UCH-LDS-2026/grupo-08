@@ -11,6 +11,9 @@
 </head>
 <body>
 
+<!-- Header: solo visible en pantalla de auth. Contiene user-info y btn-logout
+     como anclajes de DOM para compatibilidad con JS existente (mostrarDashboard,
+     logout). Cuando el dashboard está activo, el CSS lo oculta automáticamente. -->
 <header>
   <h1>🚗 HistoryCar</h1>
   <div style="display:flex;align-items:center;gap:16px;">
@@ -99,130 +102,227 @@
 
 <!-- DASHBOARD -->
 <div id="dashboard">
-  <div class="container">
-    <div class="nav-tabs">
-      <div class="nav-tab active" onclick="switchPanel('mis-vehiculos')">Mis Vehículos</div>
-      <div class="nav-tab" onclick="switchPanel('buscar')">Buscar por Patente</div>
-      <div class="nav-tab" onclick="switchPanel('historial')">Historial</div>
-      <div id="tab-agregar-vehiculo" class="nav-tab" onclick="switchPanel('agregar-vehiculo')">+ Agregar Vehículo</div>
-      <div class="nav-tab" onclick="switchPanel('cambiar-password')">Cambiar contraseña</div>
-    </div>
 
-    <!-- Panel: Mis Vehículos -->
-    <div id="panel-mis-vehiculos" class="panel active">
-      <div class="card">
-        <h3>Mis Vehículos</h3>
-        <div id="lista-vehiculos"><div class="empty">Cargando...</div></div>
-      </div>
-    </div>
+  <!-- Botón hamburguesa solo en mobile -->
+  <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Menú">&#9776;</button>
+  <!-- Overlay para cerrar sidebar en mobile al tocar fuera -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
-    <!-- Panel: Buscar por Patente -->
-    <div id="panel-buscar" class="panel">
-      <div class="card">
-        <h3>Buscar vehículo por patente</h3>
-        <div class="search-row">
-          <input type="text" id="input-patente" placeholder="Ej: ABC123" style="text-transform:uppercase;" />
-          <button class="btn btn-sm" onclick="buscarPatente()">Buscar</button>
-        </div>
-        <div id="resultado-busqueda" style="margin-top:20px;"></div>
-      </div>
-    </div>
+  <div class="dashboard-layout">
 
-    <!-- Panel: Historial -->
-    <div id="panel-historial" class="panel">
-      <div class="card">
-        <h3>Ver historial de vehículo</h3>
-        <div class="search-row" style="margin-bottom:20px;">
-          <input type="text" id="input-vehiculo-id" placeholder="Ej: 1 (ID) o ABC123 (patente)" style="text-transform:uppercase;" />
-          <button class="btn btn-sm" onclick="verHistorial()">Ver historial</button>
-        </div>
-        <div id="resultado-historial"></div>
-      </div>
-      <div id="card-agregar-historial" class="card">
-        <h3>Agregar servicio al historial</h3>
-        <div id="historial-alert"></div>
-        <div class="grid-2">
-          <div class="form-group">
-            <label>ID del vehículo</label>
-            <input type="number" id="hist-vehiculo-id" placeholder="1" />
-          </div>
-          <div class="form-group">
-            <label>Tipo</label>
-            <select id="hist-tipo">
-              <option value="service">Service</option>
-              <option value="reparacion">Reparación</option>
-              <option value="inspeccion">Inspección</option>
-              <option value="siniestro">Siniestro</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Fecha</label>
-            <input type="date" id="hist-fecha" />
-          </div>
-          <div class="form-group">
-            <label>Kilometraje</label>
-            <input type="number" id="hist-kilometraje" placeholder="50000" />
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Descripción</label>
-          <input type="text" id="hist-descripcion" placeholder="Cambio de aceite y filtros" />
-        </div>
-        <button class="btn" onclick="agregarHistorial()">Guardar servicio</button>
-      </div>
-    </div>
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
 
-    <!-- Panel: Cambiar contraseña -->
-    <div id="panel-cambiar-password" class="panel">
-      <div class="card">
-        <h3>Cambiar contraseña</h3>
-        <div id="cambiar-password-alert"></div>
-        <div class="form-group">
-          <label>Contraseña actual</label>
-          <input type="password" id="cp-actual" placeholder="••••••" />
+      <!-- Marca -->
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l2-3h8l2 3h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/>
+            <circle cx="7.5" cy="17.5" r="1.5"/>
+            <circle cx="16.5" cy="17.5" r="1.5"/>
+          </svg>
+          HistoryCar
         </div>
-        <div class="form-group">
-          <label>Nueva contraseña</label>
-          <input type="password" id="cp-nueva" placeholder="••••••" />
-        </div>
-        <div class="form-group">
-          <label>Confirmar nueva contraseña</label>
-          <input type="password" id="cp-confirmar" placeholder="••••••" />
-        </div>
-        <button class="btn" onclick="cambiarPassword()">Actualizar contraseña</button>
       </div>
-    </div>
 
-    <!-- Panel: Agregar Vehículo -->
-    <div id="panel-agregar-vehiculo" class="panel">
-      <div class="card">
-        <h3>Registrar nuevo vehículo</h3>
-        <div id="vehiculo-alert"></div>
-        <div class="grid-2">
-          <div class="form-group">
-            <label>Patente</label>
-            <input type="text" id="veh-patente" placeholder="ABC123" style="text-transform:uppercase;" />
-          </div>
-          <div class="form-group">
-            <label>Marca</label>
-            <input type="text" id="veh-marca" placeholder="Toyota" />
-          </div>
-          <div class="form-group">
-            <label>Modelo</label>
-            <input type="text" id="veh-modelo" placeholder="Corolla" />
-          </div>
-          <div class="form-group">
-            <label>Año</label>
-            <input type="number" id="veh-anio" placeholder="2020" />
-          </div>
-          <div class="form-group">
-            <label>Kilometraje actual</label>
-            <input type="number" id="veh-kilometraje" placeholder="0" />
+      <!-- Usuario -->
+      <div class="sidebar-user">
+        <div class="sidebar-avatar" id="sidebar-initials">?</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-name" id="sidebar-name">—</div>
+          <span class="sidebar-role-badge" id="sidebar-role">—</span>
+        </div>
+      </div>
+
+      <!-- Navegación -->
+      <nav class="sidebar-nav">
+
+        <div class="nav-tab active" onclick="switchPanel('mis-vehiculos')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l2-3h8l2 3h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/>
+            <circle cx="7.5" cy="17.5" r="1.5"/>
+            <circle cx="16.5" cy="17.5" r="1.5"/>
+          </svg>
+          Mis Vehículos
+        </div>
+
+        <div class="nav-tab" onclick="switchPanel('buscar')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          Buscar por Patente
+        </div>
+
+        <div class="nav-tab" onclick="switchPanel('historial')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12,6 12,12 16,14"/>
+          </svg>
+          Historial
+        </div>
+
+        <!-- Visible solo para dueno/admin — controlado por JS -->
+        <div id="tab-agregar-vehiculo" class="nav-tab" onclick="switchPanel('agregar-vehiculo')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="16"/>
+            <line x1="8" y1="12" x2="16" y2="12"/>
+          </svg>
+          Agregar Vehículo
+        </div>
+
+        <div class="nav-tab" onclick="switchPanel('cambiar-password')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          Cambiar contraseña
+        </div>
+
+      </nav>
+
+      <!-- Cerrar sesión -->
+      <div class="sidebar-footer">
+        <button id="btn-logout-sidebar" class="btn-logout-sidebar" onclick="logout()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16,17 21,12 16,7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Cerrar sesión
+        </button>
+      </div>
+
+    </aside>
+
+    <!-- ===== CONTENIDO PRINCIPAL ===== -->
+    <main class="dashboard-main">
+      <div class="dashboard-content">
+
+        <!-- Panel: Mis Vehículos -->
+        <div id="panel-mis-vehiculos" class="panel active">
+          <p class="section-title">Mis Vehículos</p>
+          <p class="section-subtitle">Administrá y monitoreá tus vehículos registrados.</p>
+          <div class="card">
+            <div id="lista-vehiculos"><div class="empty">Cargando...</div></div>
           </div>
         </div>
-        <button class="btn btn-success" onclick="agregarVehiculo()">Registrar vehículo</button>
+
+        <!-- Panel: Buscar por Patente -->
+        <div id="panel-buscar" class="panel">
+          <p class="section-title">Buscar por Patente</p>
+          <p class="section-subtitle">Consultá datos e historial de cualquier vehículo.</p>
+          <div class="card">
+            <div class="search-row">
+              <input type="text" id="input-patente" placeholder="Ej: ABC123" style="text-transform:uppercase;" />
+              <button class="btn btn-sm" onclick="buscarPatente()">Buscar</button>
+            </div>
+            <div id="resultado-busqueda" style="margin-top:20px;"></div>
+          </div>
+        </div>
+
+        <!-- Panel: Historial -->
+        <div id="panel-historial" class="panel">
+          <p class="section-title">Historial de servicios</p>
+          <p class="section-subtitle">Consultá el historial por ID de vehículo o patente.</p>
+          <div class="card">
+            <div class="search-row" style="margin-bottom:20px;">
+              <input type="text" id="input-vehiculo-id" placeholder="Ej: 1 (ID) o ABC123 (patente)" style="text-transform:uppercase;" />
+              <button class="btn btn-sm" onclick="verHistorial()">Ver historial</button>
+            </div>
+            <div id="resultado-historial"></div>
+          </div>
+          <div id="card-agregar-historial" class="card">
+            <h3>Agregar servicio al historial</h3>
+            <div id="historial-alert"></div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label>ID del vehículo</label>
+                <input type="number" id="hist-vehiculo-id" placeholder="1" />
+              </div>
+              <div class="form-group">
+                <label>Tipo</label>
+                <select id="hist-tipo">
+                  <option value="service">Service</option>
+                  <option value="reparacion">Reparación</option>
+                  <option value="inspeccion">Inspección</option>
+                  <option value="siniestro">Siniestro</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Fecha</label>
+                <input type="date" id="hist-fecha" />
+              </div>
+              <div class="form-group">
+                <label>Kilometraje</label>
+                <input type="number" id="hist-kilometraje" placeholder="50000" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Descripción</label>
+              <input type="text" id="hist-descripcion" placeholder="Cambio de aceite y filtros" />
+            </div>
+            <button class="btn" onclick="agregarHistorial()">Guardar servicio</button>
+          </div>
+        </div>
+
+        <!-- Panel: Cambiar contraseña -->
+        <div id="panel-cambiar-password" class="panel">
+          <p class="section-title">Cambiar contraseña</p>
+          <p class="section-subtitle">Actualizá tu contraseña de acceso.</p>
+          <div class="card">
+            <div id="cambiar-password-alert"></div>
+            <div class="form-group">
+              <label>Contraseña actual</label>
+              <input type="password" id="cp-actual" placeholder="••••••" />
+            </div>
+            <div class="form-group">
+              <label>Nueva contraseña</label>
+              <input type="password" id="cp-nueva" placeholder="••••••" />
+            </div>
+            <div class="form-group">
+              <label>Confirmar nueva contraseña</label>
+              <input type="password" id="cp-confirmar" placeholder="••••••" />
+            </div>
+            <button class="btn" onclick="cambiarPassword()">Actualizar contraseña</button>
+          </div>
+        </div>
+
+        <!-- Panel: Agregar Vehículo -->
+        <div id="panel-agregar-vehiculo" class="panel">
+          <p class="section-title">Registrar vehículo</p>
+          <p class="section-subtitle">Agregá un nuevo vehículo a tu flota.</p>
+          <div class="card">
+            <div id="vehiculo-alert"></div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Patente</label>
+                <input type="text" id="veh-patente" placeholder="ABC123" style="text-transform:uppercase;" />
+              </div>
+              <div class="form-group">
+                <label>Marca</label>
+                <input type="text" id="veh-marca" placeholder="Toyota" />
+              </div>
+              <div class="form-group">
+                <label>Modelo</label>
+                <input type="text" id="veh-modelo" placeholder="Corolla" />
+              </div>
+              <div class="form-group">
+                <label>Año</label>
+                <input type="number" id="veh-anio" placeholder="2020" />
+              </div>
+              <div class="form-group">
+                <label>Kilometraje actual</label>
+                <input type="number" id="veh-kilometraje" placeholder="0" />
+              </div>
+            </div>
+            <button class="btn btn-success" onclick="agregarVehiculo()">Registrar vehículo</button>
+          </div>
+        </div>
+
       </div>
-    </div>
+    </main>
 
   </div>
 </div>
