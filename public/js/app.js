@@ -170,20 +170,32 @@ async function buscarPatente() {
   const div = document.getElementById('resultado-busqueda');
   if (!res.ok) return div.innerHTML = `<div class="alert alert-error">${data.error}</div>`;
   const v = data.vehiculo;
+  const ownerInitial = v.dueno_nombre ? v.dueno_nombre.charAt(0).toUpperCase() : '?';
+  const km = v.kilometraje !== undefined ? Number(v.kilometraje).toLocaleString('es-AR') + ' km' : '—';
   div.innerHTML = `
-    <table>
-      <thead><tr><th>ID</th><th>Patente</th><th>Marca</th><th>Modelo</th><th>Año</th><th>Kilometraje</th><th>Cliente</th><th>Correo</th></tr></thead>
-      <tbody><tr>
-        <td>${v.id}</td>
-        <td><strong>${v.patente}</strong></td>
-        <td>${v.marca}</td>
-        <td>${v.modelo}</td>
-        <td>${v.anio || '-'}</td>
-        <td>${v.kilometraje !== undefined ? v.kilometraje + ' km' : '-'}</td>
-        <td>${v.dueno_nombre}</td>
-        <td>${v.dueno_email}</td>
-      </tr></tbody>
-    </table>`;
+    <div class="vehicle-identity-card">
+      <div class="vic-header">
+        <div>
+          <div class="vic-plate-large">${v.patente}</div>
+          <div class="vic-subtitle">${v.marca} ${v.modelo}${v.anio ? ' · ' + v.anio : ''}</div>
+        </div>
+        <span class="vic-id-chip">ID #${v.id}</span>
+      </div>
+      <div class="vic-specs">
+        ${v.vin ? `<div class="vic-spec"><span class="vic-spec-label">VIN</span><span class="vic-spec-value">${v.vin}</span></div>` : ''}
+        <div class="vic-spec"><span class="vic-spec-label">Patente</span><span class="vic-spec-value">${v.patente}</span></div>
+        <div class="vic-spec"><span class="vic-spec-label">Año</span><span class="vic-spec-value">${v.anio || '—'}</span></div>
+        <div class="vic-spec"><span class="vic-spec-label">Kilometraje</span><span class="vic-spec-value">${km}</span></div>
+      </div>
+      <div class="vic-owner">
+        <div class="vic-owner-avatar">${ownerInitial}</div>
+        <div class="vic-owner-info">
+          <div class="vic-owner-label">Propietario registrado</div>
+          <div class="vic-owner-name">${v.dueno_nombre}</div>
+          <div class="vic-owner-email">${v.dueno_email}</div>
+        </div>
+      </div>
+    </div>`;
 }
 
 // --- HISTORIAL ---

@@ -614,3 +614,193 @@ tr:hover td { background: #fafafa; }
   border-color: #00687a;
   box-shadow: 0 0 0 3px rgba(0, 104, 122, 0.12);
 }
+
+/* ============================================================
+   BUSCAR POR PATENTE — Etapa 4
+   ============================================================ */
+
+/* Barra de búsqueda prominente */
+.search-box-panel {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  align-items: stretch;
+}
+
+.search-input-wrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon-inline {
+  position: absolute;
+  left: 14px;
+  color: #94a3b8;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+.search-input-lg {
+  width: 100%;
+  padding: 12px 14px 12px 44px;
+  border: 1px solid #dce1e9;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: border 0.2s, box-shadow 0.2s;
+  background: white;
+  text-transform: uppercase;
+}
+.search-input-lg::placeholder { text-transform: none; color: #b0b8c4; }
+.search-input-lg:focus {
+  outline: none;
+  border-color: #00687a;
+  box-shadow: 0 0 0 3px rgba(0, 104, 122, 0.12);
+}
+
+.btn-search {
+  background: #1e1b4b;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+  font-family: inherit;
+  letter-spacing: 0.01em;
+}
+.btn-search:hover { background: #070235; }
+
+/* Tarjeta de identidad del vehículo */
+.vehicle-identity-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.vic-header {
+  background: #1e1b4b;
+  padding: 20px 24px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.vic-plate-large {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.12em;
+  line-height: 1.1;
+}
+
+.vic-subtitle {
+  font-size: 0.83rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 5px;
+  font-weight: 400;
+}
+
+.vic-id-chip {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.vic-specs {
+  display: flex;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.vic-spec {
+  flex: 1;
+  min-width: 110px;
+  padding: 14px 20px;
+  border-right: 1px solid #f1f5f9;
+}
+.vic-spec:last-child { border-right: none; }
+
+.vic-spec-label {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 5px;
+}
+
+.vic-spec-value {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #0b1c30;
+}
+
+.vic-owner {
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.vic-owner-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: #eff4ff;
+  color: #1e1b4b;
+  font-size: 0.9rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.vic-owner-info {}
+
+.vic-owner-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 3px;
+}
+
+.vic-owner-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #0b1c30;
+}
+
+.vic-owner-email {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-top: 1px;
+}
+
+@media (max-width: 640px) {
+  .search-box-panel { flex-direction: column; }
+  .btn-search { width: 100%; text-align: center; }
+  .vic-specs { flex-direction: column; }
+  .vic-spec { border-right: none; border-bottom: 1px solid #f1f5f9; }
+  .vic-spec:last-child { border-bottom: none; }
+}

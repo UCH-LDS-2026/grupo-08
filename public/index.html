@@ -212,14 +212,21 @@
         <!-- Panel: Buscar por Patente -->
         <div id="panel-buscar" class="panel">
           <p class="section-title">Buscar por Patente</p>
-          <p class="section-subtitle">Consultá datos e historial de cualquier vehículo.</p>
-          <div class="card">
-            <div class="search-row">
-              <input type="text" id="input-patente" placeholder="Ej: ABC123" style="text-transform:uppercase;" />
-              <button class="btn btn-sm" onclick="buscarPatente()">Buscar</button>
+          <p class="section-subtitle">Consultá datos de cualquier vehículo registrado en el sistema.</p>
+
+          <div class="search-box-panel">
+            <div class="search-input-wrap">
+              <span class="search-icon-inline">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+              </span>
+              <input type="text" id="input-patente" class="search-input-lg" placeholder="Ingresá la patente  —  Ej: ABC123" />
             </div>
-            <div id="resultado-busqueda" style="margin-top:20px;"></div>
+            <button class="btn-search" onclick="buscarPatente()">Consultar</button>
           </div>
+
+          <div id="resultado-busqueda"></div>
         </div>
 
         <!-- Panel: Historial -->
