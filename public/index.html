@@ -4,169 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HistoryCar</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f0f2f5;
-      color: #333;
-    }
-
-    header {
-      background: #1a1a2e;
-      color: white;
-      padding: 16px 32px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    header h1 { font-size: 1.5rem; letter-spacing: 1px; }
-    header span { font-size: 0.85rem; opacity: 0.7; }
-
-    #btn-logout {
-      background: #e74c3c;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      display: none;
-    }
-
-    #user-info { font-size: 0.9rem; opacity: 0.85; display: none; }
-
-    .container { max-width: 900px; margin: 40px auto; padding: 0 16px; }
-
-    /* AUTH */
-    #auth-section {
-      background: white;
-      border-radius: 12px;
-      padding: 40px;
-      max-width: 420px;
-      margin: 60px auto;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    }
-
-    #auth-section h2 { margin-bottom: 24px; color: #1a1a2e; text-align: center; }
-
-    .tabs { display: flex; margin-bottom: 24px; border-bottom: 2px solid #eee; }
-    .tab {
-      flex: 1; text-align: center; padding: 10px;
-      cursor: pointer; font-weight: 600; color: #888;
-      border-bottom: 3px solid transparent; margin-bottom: -2px;
-      transition: all 0.2s;
-    }
-    .tab.active { color: #1a1a2e; border-bottom-color: #1a1a2e; }
-
-    .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; font-size: 0.85rem; margin-bottom: 6px; color: #555; }
-    .form-group input, .form-group select, .form-group textarea {
-      width: 100%; padding: 10px 12px;
-      border: 1px solid #ddd; border-radius: 8px;
-      font-size: 0.95rem; transition: border 0.2s;
-    }
-    .form-group input:focus, .form-group select:focus {
-      outline: none; border-color: #1a1a2e;
-    }
-
-    .btn {
-      width: 100%; padding: 12px;
-      background: #1a1a2e; color: white;
-      border: none; border-radius: 8px;
-      font-size: 1rem; font-weight: 600;
-      cursor: pointer; transition: background 0.2s;
-    }
-    .btn:hover { background: #16213e; }
-    .btn-sm {
-      width: auto; padding: 8px 16px;
-      font-size: 0.85rem; border-radius: 6px;
-    }
-    .btn-danger { background: #e74c3c; }
-    .btn-danger:hover { background: #c0392b; }
-    .btn-success { background: #27ae60; }
-    .btn-success:hover { background: #219a52; }
-
-    .alert {
-      padding: 12px 16px; border-radius: 8px;
-      margin-bottom: 16px; font-size: 0.9rem;
-    }
-    .alert-error { background: #fde8e8; color: #c0392b; }
-    .alert-success { background: #e8f8f0; color: #27ae60; }
-
-    /* DASHBOARD */
-    #dashboard { display: none; }
-
-    .nav-tabs {
-      display: flex; gap: 8px; margin-bottom: 24px;
-      flex-wrap: wrap;
-    }
-    .nav-tab {
-      padding: 10px 20px; border-radius: 8px;
-      cursor: pointer; font-weight: 600;
-      background: white; color: #555;
-      border: 2px solid #ddd; transition: all 0.2s;
-    }
-    .nav-tab.active {
-      background: #1a1a2e; color: white; border-color: #1a1a2e;
-    }
-
-    .panel { display: none; }
-    .panel.active { display: block; }
-
-    .card {
-      background: white; border-radius: 12px;
-      padding: 24px; margin-bottom: 20px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-    }
-    .card h3 { margin-bottom: 16px; color: #1a1a2e; font-size: 1.1rem; }
-
-    table {
-      width: 100%; border-collapse: collapse;
-      font-size: 0.9rem;
-    }
-    th {
-      background: #f8f9fa; text-align: left;
-      padding: 10px 12px; border-bottom: 2px solid #eee;
-      color: #555; font-size: 0.8rem; text-transform: uppercase;
-    }
-    td { padding: 12px; border-bottom: 1px solid #f0f0f0; }
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: #fafafa; }
-
-    .badge {
-      padding: 4px 10px; border-radius: 20px;
-      font-size: 0.75rem; font-weight: 600;
-    }
-    .badge-dueno { background: #dbeafe; color: #1d4ed8; }
-    .badge-taller { background: #fef3c7; color: #b45309; }
-    .badge-admin { background: #fce7f3; color: #9d174d; }
-
-    .empty { text-align: center; padding: 32px; color: #aaa; font-size: 0.95rem; }
-
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
-
-    .search-row { display: flex; gap: 10px; }
-    .search-row input { flex: 1; }
-    .search-row button { width: auto; }
-
-    .historial-item {
-      border-left: 4px solid #1a1a2e;
-      padding: 12px 16px; margin-bottom: 12px;
-      background: #f8f9fa; border-radius: 0 8px 8px 0;
-    }
-    .historial-item .tipo {
-      font-weight: 700; color: #1a1a2e;
-      text-transform: uppercase; font-size: 0.8rem;
-    }
-    .historial-item .desc { margin: 4px 0; font-size: 0.95rem; }
-    .historial-item .meta { font-size: 0.8rem; color: #888; }
-  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
 
+<!-- Header: solo visible en pantalla de auth. Contiene user-info y btn-logout
+     como anclajes de DOM para compatibilidad con JS existente (mostrarDashboard,
+     logout). Cuando el dashboard está activo, el CSS lo oculta automáticamente. -->
 <header>
   <h1>🚗 HistoryCar</h1>
   <div style="display:flex;align-items:center;gap:16px;">
@@ -177,436 +24,341 @@
 
 <!-- AUTH -->
 <div id="auth-section">
-  <h2>HistoryCar</h2>
-  <div class="tabs">
-    <div class="tab active" onclick="switchAuth('login')">Iniciar sesión</div>
-    <div class="tab" onclick="switchAuth('registro')">Registrarse</div>
-  </div>
+  <div class="auth-split">
 
-  <div id="auth-alert"></div>
+    <!-- Panel izquierdo: branding -->
+    <div class="auth-left">
+      <div class="auth-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l2-3h8l2 3h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/>
+          <circle cx="7.5" cy="17.5" r="1.5"/>
+          <circle cx="16.5" cy="17.5" r="1.5"/>
+        </svg>
+        HistoryCar
+      </div>
+      <div class="auth-tagline">
+        <h2>Historial verificado.<br>Transparencia total.</h2>
+        <p>El historial de tu vehículo, seguro y verificado.</p>
+      </div>
+      <p class="auth-footer-text">Seguridad de datos garantizada</p>
+    </div>
 
-  <!-- Login -->
-  <div id="form-login">
-    <div class="form-group">
-      <label>Email</label>
-      <input type="email" id="login-email" placeholder="juan@gmail.com" />
-    </div>
-    <div class="form-group">
-      <label>Contraseña</label>
-      <input type="password" id="login-password" placeholder="••••••" />
-    </div>
-    <button class="btn" onclick="login()">Entrar</button>
-  </div>
+    <!-- Panel derecho: formularios -->
+    <div class="auth-right">
+      <div class="auth-form-container">
 
-  <!-- Registro -->
-  <div id="form-registro" style="display:none;">
-    <div class="form-group">
-      <label>Nombre completo</label>
-      <input type="text" id="reg-nombre" placeholder="Juan Pérez" />
+        <div class="tabs">
+          <div class="tab active" onclick="switchAuth('login')">Iniciar sesión</div>
+          <div class="tab" onclick="switchAuth('registro')">Registrarse</div>
+        </div>
+
+        <div id="auth-alert"></div>
+
+        <!-- Login -->
+        <div id="form-login">
+          <p class="auth-form-subtitle">Ingresá con tu cuenta para continuar.</p>
+          <div class="form-group">
+            <label>Correo electrónico</label>
+            <input type="email" id="login-email" placeholder="juan@gmail.com" />
+          </div>
+          <div class="form-group">
+            <label>Contraseña</label>
+            <input type="password" id="login-password" placeholder="••••••" />
+          </div>
+          <button class="btn" onclick="login()">Iniciar sesión</button>
+        </div>
+
+        <!-- Registro -->
+        <div id="form-registro" style="display:none;">
+          <p class="auth-form-subtitle">Creá tu cuenta para comenzar.</p>
+          <div class="form-group">
+            <label>Nombre completo</label>
+            <input type="text" id="reg-nombre" placeholder="Juan Pérez" />
+          </div>
+          <div class="form-group">
+            <label>Correo electrónico</label>
+            <input type="email" id="reg-email" placeholder="juan@gmail.com" />
+          </div>
+          <div class="form-group">
+            <label>Contraseña</label>
+            <input type="password" id="reg-password" placeholder="••••••" />
+          </div>
+          <div class="form-group">
+            <label>Tipo de cuenta</label>
+            <select id="reg-rol">
+              <option value="dueno">Dueño de vehículo</option>
+              <option value="taller">Taller mecánico</option>
+              <option value="admin">Administrador</option>
+            </select>
+          </div>
+          <button class="btn" onclick="registro()">Crear cuenta</button>
+        </div>
+
+      </div>
     </div>
-    <div class="form-group">
-      <label>Email</label>
-      <input type="email" id="reg-email" placeholder="juan@gmail.com" />
-    </div>
-    <div class="form-group">
-      <label>Contraseña</label>
-      <input type="password" id="reg-password" placeholder="••••••" />
-    </div>
-    <div class="form-group">
-      <label>Rol</label>
-      <select id="reg-rol">
-        <option value="dueno">Dueño de vehículo</option>
-        <option value="taller">Taller mecánico</option>
-        <option value="admin">Administrador</option>
-      </select>
-    </div>
-    <button class="btn" onclick="registro()">Crear cuenta</button>
+
   </div>
 </div>
 
 <!-- DASHBOARD -->
 <div id="dashboard">
-  <div class="container">
-    <div class="nav-tabs">
-      <div class="nav-tab active" onclick="switchPanel('mis-vehiculos')">Mis Vehículos</div>
-      <div class="nav-tab" onclick="switchPanel('buscar')">Buscar por Patente</div>
-      <div class="nav-tab" onclick="switchPanel('historial')">Historial</div>
-      <div id="tab-agregar-vehiculo" class="nav-tab" onclick="switchPanel('agregar-vehiculo')">+ Agregar Vehículo</div>
-      <div class="nav-tab" onclick="switchPanel('cambiar-password')">Cambiar contraseña</div>
-    </div>
 
-    <!-- Panel: Mis Vehículos -->
-    <div id="panel-mis-vehiculos" class="panel active">
-      <div class="card">
-        <h3>Mis Vehículos</h3>
-        <div id="lista-vehiculos"><div class="empty">Cargando...</div></div>
-      </div>
-    </div>
+  <!-- Botón hamburguesa solo en mobile -->
+  <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Menú">&#9776;</button>
+  <!-- Overlay para cerrar sidebar en mobile al tocar fuera -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
-    <!-- Panel: Buscar por Patente -->
-    <div id="panel-buscar" class="panel">
-      <div class="card">
-        <h3>Buscar vehículo por patente</h3>
-        <div class="search-row">
-          <input type="text" id="input-patente" placeholder="Ej: ABC123" style="text-transform:uppercase;" />
-          <button class="btn btn-sm" onclick="buscarPatente()">Buscar</button>
-        </div>
-        <div id="resultado-busqueda" style="margin-top:20px;"></div>
-      </div>
-    </div>
+  <div class="dashboard-layout">
 
-    <!-- Panel: Historial -->
-    <div id="panel-historial" class="panel">
-      <div class="card">
-        <h3>Ver historial de vehículo</h3>
-        <div class="search-row" style="margin-bottom:20px;">
-          <input type="text" id="input-vehiculo-id" placeholder="Ej: 1 (ID) o ABC123 (patente)" style="text-transform:uppercase;" />
-          <button class="btn btn-sm" onclick="verHistorial()">Ver historial</button>
-        </div>
-        <div id="resultado-historial"></div>
-      </div>
-      <div id="card-agregar-historial" class="card">
-        <h3>Agregar servicio al historial</h3>
-        <div id="historial-alert"></div>
-        <div class="grid-2">
-          <div class="form-group">
-            <label>ID del vehículo</label>
-            <input type="number" id="hist-vehiculo-id" placeholder="1" />
-          </div>
-          <div class="form-group">
-            <label>Tipo</label>
-            <select id="hist-tipo">
-              <option value="service">Service</option>
-              <option value="reparacion">Reparación</option>
-              <option value="inspeccion">Inspección</option>
-              <option value="siniestro">Siniestro</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Fecha</label>
-            <input type="date" id="hist-fecha" />
-          </div>
-          <div class="form-group">
-            <label>Kilometraje</label>
-            <input type="number" id="hist-kilometraje" placeholder="50000" />
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Descripción</label>
-          <input type="text" id="hist-descripcion" placeholder="Cambio de aceite y filtros" />
-        </div>
-        <button class="btn" onclick="agregarHistorial()">Guardar servicio</button>
-      </div>
-    </div>
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
 
-    <!-- Panel: Cambiar contraseña -->
-    <div id="panel-cambiar-password" class="panel">
-      <div class="card">
-        <h3>Cambiar contraseña</h3>
-        <div id="cambiar-password-alert"></div>
-        <div class="form-group">
-          <label>Contraseña actual</label>
-          <input type="password" id="cp-actual" placeholder="••••••" />
+      <!-- Marca -->
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l2-3h8l2 3h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/>
+            <circle cx="7.5" cy="17.5" r="1.5"/>
+            <circle cx="16.5" cy="17.5" r="1.5"/>
+          </svg>
+          HistoryCar
         </div>
-        <div class="form-group">
-          <label>Nueva contraseña</label>
-          <input type="password" id="cp-nueva" placeholder="••••••" />
-        </div>
-        <div class="form-group">
-          <label>Confirmar nueva contraseña</label>
-          <input type="password" id="cp-confirmar" placeholder="••••••" />
-        </div>
-        <button class="btn" onclick="cambiarPassword()">Actualizar contraseña</button>
       </div>
-    </div>
 
-    <!-- Panel: Agregar Vehículo -->
-    <div id="panel-agregar-vehiculo" class="panel">
-      <div class="card">
-        <h3>Registrar nuevo vehículo</h3>
-        <div id="vehiculo-alert"></div>
-        <div class="grid-2">
-          <div class="form-group">
-            <label>Patente</label>
-            <input type="text" id="veh-patente" placeholder="ABC123" style="text-transform:uppercase;" />
-          </div>
-          <div class="form-group">
-            <label>Marca</label>
-            <input type="text" id="veh-marca" placeholder="Toyota" />
-          </div>
-          <div class="form-group">
-            <label>Modelo</label>
-            <input type="text" id="veh-modelo" placeholder="Corolla" />
-          </div>
-          <div class="form-group">
-            <label>Año</label>
-            <input type="number" id="veh-anio" placeholder="2020" />
-          </div>
-          <div class="form-group">
-            <label>Kilometraje actual</label>
-            <input type="number" id="veh-kilometraje" placeholder="0" />
+      <!-- Usuario -->
+      <div class="sidebar-user">
+        <div class="sidebar-avatar" id="sidebar-initials">?</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-name" id="sidebar-name">—</div>
+          <span class="sidebar-role-badge" id="sidebar-role">—</span>
+        </div>
+      </div>
+
+      <!-- Navegación -->
+      <nav class="sidebar-nav">
+
+        <div class="nav-tab active" data-panel="mis-vehiculos" onclick="switchPanel('mis-vehiculos')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l2-3h8l2 3h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/>
+            <circle cx="7.5" cy="17.5" r="1.5"/>
+            <circle cx="16.5" cy="17.5" r="1.5"/>
+          </svg>
+          Mis Vehículos
+        </div>
+
+        <div class="nav-tab" data-panel="buscar" onclick="switchPanel('buscar')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          Buscar por Patente
+        </div>
+
+        <div class="nav-tab" data-panel="historial" onclick="switchPanel('historial')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12,6 12,12 16,14"/>
+          </svg>
+          Historial
+        </div>
+
+        <!-- Visible solo para dueno/admin — controlado por JS -->
+        <div id="tab-agregar-vehiculo" class="nav-tab" data-panel="agregar-vehiculo" onclick="switchPanel('agregar-vehiculo')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="16"/>
+            <line x1="8" y1="12" x2="16" y2="12"/>
+          </svg>
+          Agregar Vehículo
+        </div>
+
+        <div class="nav-tab" data-panel="cambiar-password" onclick="switchPanel('cambiar-password')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          Cambiar contraseña
+        </div>
+
+      </nav>
+
+      <!-- Cerrar sesión -->
+      <div class="sidebar-footer">
+        <button id="btn-logout-sidebar" class="btn-logout-sidebar" onclick="logout()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16,17 21,12 16,7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Cerrar sesión
+        </button>
+      </div>
+
+    </aside>
+
+    <!-- ===== CONTENIDO PRINCIPAL ===== -->
+    <main class="dashboard-main">
+      <div class="dashboard-content">
+
+        <!-- Panel: Mis Vehículos -->
+        <div id="panel-mis-vehiculos" class="panel active">
+          <p class="section-title">Mis Vehículos</p>
+          <p class="section-subtitle">Administrá y monitoreá tus vehículos registrados.</p>
+          <div class="card">
+            <div id="lista-vehiculos"><div class="empty">Cargando...</div></div>
           </div>
         </div>
-        <button class="btn btn-success" onclick="agregarVehiculo()">Registrar vehículo</button>
+
+        <!-- Panel: Buscar por Patente -->
+        <div id="panel-buscar" class="panel">
+          <p class="section-title">Buscar por Patente</p>
+          <p class="section-subtitle">Consultá datos de cualquier vehículo registrado en el sistema.</p>
+
+          <div class="search-box-panel">
+            <div class="search-input-wrap">
+              <span class="search-icon-inline">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+              </span>
+              <input type="text" id="input-patente" class="search-input-lg" placeholder="Ingresá la patente  —  Ej: ABC123" />
+            </div>
+            <button class="btn-search" onclick="buscarPatente()">Consultar</button>
+          </div>
+
+          <div id="resultado-busqueda"></div>
+        </div>
+
+        <!-- Panel: Historial -->
+        <div id="panel-historial" class="panel">
+          <p class="section-title">Historial de servicios</p>
+          <p class="section-subtitle">Consultá el historial ingresando el ID del vehículo o su patente.</p>
+
+          <div class="search-box-panel">
+            <div class="search-input-wrap">
+              <span class="search-icon-inline">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+              </span>
+              <input type="text" id="input-vehiculo-id" class="search-input-lg" placeholder="ID del vehículo (ej: 1) o patente (ej: ABC123)" style="text-transform:uppercase;" />
+            </div>
+            <button class="btn-search" onclick="verHistorial()">Ver historial</button>
+          </div>
+
+          <div id="resultado-historial"></div>
+
+          <!-- Formulario de carga — visible solo para taller/admin -->
+          <div id="card-agregar-historial" class="historial-form-card">
+            <h3>Registrar servicio</h3>
+            <p class="historial-form-subtitle">Cargá un nuevo servicio al historial del vehículo.</p>
+            <div id="historial-alert"></div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label>ID del vehículo</label>
+                <input type="number" id="hist-vehiculo-id" placeholder="1" />
+              </div>
+              <div class="form-group">
+                <label>Tipo de servicio</label>
+                <select id="hist-tipo">
+                  <option value="service">Service</option>
+                  <option value="reparacion">Reparación</option>
+                  <option value="inspeccion">Inspección</option>
+                  <option value="siniestro">Siniestro</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Fecha</label>
+                <input type="date" id="hist-fecha" />
+              </div>
+              <div class="form-group">
+                <label>Kilometraje</label>
+                <input type="number" id="hist-kilometraje" placeholder="50000" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Descripción del servicio</label>
+              <input type="text" id="hist-descripcion" placeholder="Ej: Cambio de aceite y filtros" />
+            </div>
+            <button class="btn" onclick="agregarHistorial()">Guardar servicio</button>
+          </div>
+        </div>
+
+        <!-- Panel: Cambiar contraseña -->
+        <div id="panel-cambiar-password" class="panel">
+          <p class="section-title">Cambiar contraseña</p>
+          <p class="section-subtitle">Actualizá tu contraseña de acceso a la plataforma.</p>
+
+          <div class="password-change-card">
+            <div id="cambiar-password-alert"></div>
+
+            <p class="password-section-label">Contraseña actual</p>
+            <div class="form-group">
+              <label>Contraseña actual</label>
+              <input type="password" id="cp-actual" placeholder="Ingresá tu contraseña actual" />
+            </div>
+
+            <div class="password-divider"></div>
+
+            <p class="password-section-label">Nueva contraseña</p>
+            <div class="form-group">
+              <label>Nueva contraseña</label>
+              <input type="password" id="cp-nueva" placeholder="Mínimo 6 caracteres" />
+            </div>
+            <div class="form-group">
+              <label>Confirmar nueva contraseña</label>
+              <input type="password" id="cp-confirmar" placeholder="Repetí la nueva contraseña" />
+            </div>
+
+            <div class="password-hint">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              La nueva contraseña debe tener al menos 6 caracteres. La nueva contraseña y la confirmación deben coincidir.
+            </div>
+
+            <button class="btn" onclick="cambiarPassword()">Actualizar contraseña</button>
+          </div>
+        </div>
+
+        <!-- Panel: Agregar Vehículo -->
+        <div id="panel-agregar-vehiculo" class="panel">
+          <p class="section-title">Registrar vehículo</p>
+          <p class="section-subtitle">Agregá un nuevo vehículo a tu flota.</p>
+          <div class="card">
+            <div id="vehiculo-alert"></div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Patente</label>
+                <input type="text" id="veh-patente" placeholder="ABC123" style="text-transform:uppercase;" />
+              </div>
+              <div class="form-group">
+                <label>Marca</label>
+                <input type="text" id="veh-marca" placeholder="Toyota" />
+              </div>
+              <div class="form-group">
+                <label>Modelo</label>
+                <input type="text" id="veh-modelo" placeholder="Corolla" />
+              </div>
+              <div class="form-group">
+                <label>Año</label>
+                <input type="number" id="veh-anio" placeholder="2020" />
+              </div>
+              <div class="form-group">
+                <label>Kilometraje actual</label>
+                <input type="number" id="veh-kilometraje" placeholder="0" />
+              </div>
+            </div>
+            <button class="btn btn-success" onclick="agregarVehiculo()">Registrar vehículo</button>
+          </div>
+        </div>
+
       </div>
-    </div>
+    </main>
 
   </div>
 </div>
 
-<script>
-  const API = 'http://localhost:3000/api';
-  let token = localStorage.getItem('token');
-  let usuarioActual = JSON.parse(localStorage.getItem('usuario') || 'null');
-
-  if (token && usuarioActual) mostrarDashboard();
-
-  // --- AUTH ---
-  function switchAuth(modo) {
-    document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', (modo === 'login' && i === 0) || (modo === 'registro' && i === 1)));
-    document.getElementById('form-login').style.display = modo === 'login' ? 'block' : 'none';
-    document.getElementById('form-registro').style.display = modo === 'registro' ? 'block' : 'none';
-    document.getElementById('auth-alert').innerHTML = '';
-  }
-
-  async function login() {
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-    try {
-      const res = await fetch(`${API}/auth/login`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await res.json();
-      if (!res.ok) return showAlert('auth-alert', data.error, 'error');
-      token = data.token;
-      usuarioActual = data.usuario;
-      localStorage.setItem('token', token);
-      localStorage.setItem('usuario', JSON.stringify(usuarioActual));
-      mostrarDashboard();
-    } catch { showAlert('auth-alert', 'Error de conexión con el servidor', 'error'); }
-  }
-
-  async function registro() {
-    const nombre = document.getElementById('reg-nombre').value;
-    const email = document.getElementById('reg-email').value;
-    const password = document.getElementById('reg-password').value;
-    const rol = document.getElementById('reg-rol').value;
-    try {
-      const res = await fetch(`${API}/auth/registro`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre, email, password, rol })
-      });
-      const data = await res.json();
-      if (!res.ok) return showAlert('auth-alert', data.error, 'error');
-      showAlert('auth-alert', 'Cuenta creada. Ahora iniciá sesión.', 'success');
-      switchAuth('login');
-    } catch { showAlert('auth-alert', 'Error de conexión con el servidor', 'error'); }
-  }
-
-  function logout() {
-    token = null; usuarioActual = null;
-    localStorage.removeItem('token');
-    localStorage.removeItem('usuario');
-    document.getElementById('dashboard').style.display = 'none';
-    document.getElementById('auth-section').style.display = 'block';
-    document.getElementById('btn-logout').style.display = 'none';
-    document.getElementById('user-info').style.display = 'none';
-  }
-
-  function mostrarDashboard() {
-    document.getElementById('auth-section').style.display = 'none';
-    document.getElementById('dashboard').style.display = 'block';
-    document.getElementById('btn-logout').style.display = 'inline-block';
-    document.getElementById('user-info').style.display = 'inline';
-    document.getElementById('user-info').textContent = `${usuarioActual.nombre} · ${formatRol(usuarioActual.rol)}`;
-
-    // Mostrar "Agregar Vehículo" solo para dueño o admin
-    const puedeAgregarVehiculo = ['dueno', 'admin'].includes(usuarioActual.rol);
-    document.getElementById('tab-agregar-vehiculo').style.display = puedeAgregarVehiculo ? '' : 'none';
-
-    // Mostrar "Agregar servicio al historial" solo para taller o admin
-    const puedeCargarHistorial = ['taller', 'admin'].includes(usuarioActual.rol);
-    document.getElementById('card-agregar-historial').style.display = puedeCargarHistorial ? '' : 'none';
-
-    cargarMisVehiculos();
-    document.getElementById('hist-fecha').valueAsDate = new Date();
-  }
-
-  // --- NAVEGACIÓN ---
-  function switchPanel(id) {
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-    document.getElementById(`panel-${id}`).classList.add('active');
-    event.target.classList.add('active');
-  }
-
-  // --- VEHÍCULOS ---
-  async function cargarMisVehiculos() {
-    const res = await fetch(`${API}/vehiculos/mis-vehiculos`, { headers: { Authorization: `Bearer ${token}` } });
-    const data = await res.json();
-    const lista = document.getElementById('lista-vehiculos');
-    if (!data.vehiculos || !data.vehiculos.length) return lista.innerHTML = '<div class="empty">No tenés vehículos registrados aún.</div>';
-    lista.innerHTML = `
-      <table>
-        <thead><tr><th>ID</th><th>Patente</th><th>Marca</th><th>Modelo</th><th>Año</th><th>Kilometraje</th></tr></thead>
-        <tbody>
-          ${data.vehiculos.map(v => `<tr>
-            <td>${v.id}</td>
-            <td><strong>${v.patente}</strong></td>
-            <td>${v.marca}</td>
-            <td>${v.modelo}</td>
-            <td>${v.anio || '-'}</td>
-            <td>${v.kilometraje !== undefined ? v.kilometraje + ' km' : '-'}</td>
-          </tr>`).join('')}
-        </tbody>
-      </table>`;
-  }
-
-  async function agregarVehiculo() {
-    const body = {
-      patente: document.getElementById('veh-patente').value.trim().toUpperCase(),
-      marca: document.getElementById('veh-marca').value,
-      modelo: document.getElementById('veh-modelo').value,
-      anio: parseInt(document.getElementById('veh-anio').value),
-      kilometraje: parseInt(document.getElementById('veh-kilometraje').value) || 0
-    };
-    try {
-      const res = await fetch(`${API}/vehiculos`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(body)
-      });
-      const data = await res.json();
-      if (!res.ok) return showAlert('vehiculo-alert', data.error, 'error');
-      showAlert('vehiculo-alert', `Vehículo ${body.patente} registrado exitosamente`, 'success');
-      ['veh-patente','veh-marca','veh-modelo','veh-anio','veh-kilometraje'].forEach(id => document.getElementById(id).value = '');
-      cargarMisVehiculos();
-    } catch { showAlert('vehiculo-alert', 'Error de conexión', 'error'); }
-  }
-
-  async function buscarPatente() {
-    const patente = document.getElementById('input-patente').value.toUpperCase().trim();
-    if (!patente) return;
-    const res = await fetch(`${API}/vehiculos/patente/${patente}`, { headers: { Authorization: `Bearer ${token}` } });
-    const data = await res.json();
-    const div = document.getElementById('resultado-busqueda');
-    if (!res.ok) return div.innerHTML = `<div class="alert alert-error">${data.error}</div>`;
-    const v = data.vehiculo;
-    div.innerHTML = `
-      <table>
-        <thead><tr><th>ID</th><th>Patente</th><th>Marca</th><th>Modelo</th><th>Año</th><th>Kilometraje</th><th>Cliente</th><th>Correo</th></tr></thead>
-        <tbody><tr>
-          <td>${v.id}</td>
-          <td><strong>${v.patente}</strong></td>
-          <td>${v.marca}</td>
-          <td>${v.modelo}</td>
-          <td>${v.anio || '-'}</td>
-          <td>${v.kilometraje !== undefined ? v.kilometraje + ' km' : '-'}</td>
-          <td>${v.dueno_nombre}</td>
-          <td>${v.dueno_email}</td>
-        </tr></tbody>
-      </table>`;
-  }
-
-  // --- HISTORIAL ---
-  async function verHistorial() {
-    const valor = document.getElementById('input-vehiculo-id').value.trim();
-    if (!valor) return;
-    // Si es solo dígitos → buscar por ID; si tiene letras → buscar por patente
-    const url = /^\d+$/.test(valor)
-      ? `${API}/historial/vehiculo/${valor}`
-      : `${API}/historial/patente/${valor.toUpperCase()}`;
-    const res = await fetch(url);
-    const data = await res.json();
-    const div = document.getElementById('resultado-historial');
-    if (!res.ok) return div.innerHTML = `<div class="alert alert-error">${data.error}</div>`;
-    const veh = data.vehiculo;
-    const filaVehiculo = `
-      <div style="margin-bottom:14px;padding:12px 16px;background:#eef0f5;border-radius:8px;font-size:0.9rem;">
-        <strong>ID ${veh.id} · ${veh.patente}</strong> &nbsp;|&nbsp;
-        ${veh.marca} ${veh.modelo} ${veh.anio} &nbsp;|&nbsp;
-        🛣️ ${veh.kilometraje} km
-      </div>`;
-    if (!data.historial || !data.historial.length) {
-      return div.innerHTML = filaVehiculo + '<div class="empty">No hay historial para este vehículo.</div>';
-    }
-    div.innerHTML = filaVehiculo + data.historial.map(h => `
-      <div class="historial-item">
-        <div class="tipo">${h.tipo_servicio}</div>
-        <div class="desc">${h.descripcion || '-'}</div>
-        <div class="meta">📅 ${h.fecha_servicio} &nbsp;·&nbsp; 🛣️ ${h.kilometraje_servicio ? h.kilometraje_servicio + ' km' : 'N/A'} &nbsp;·&nbsp; 🔧 ${h.nombre_taller}</div>
-      </div>`).join('');
-  }
-
-  async function agregarHistorial() {
-    const body = {
-      vehiculo_id: parseInt(document.getElementById('hist-vehiculo-id').value),
-      tipo_servicio: document.getElementById('hist-tipo').value,
-      descripcion: document.getElementById('hist-descripcion').value,
-      fecha_servicio: document.getElementById('hist-fecha').value,
-      kilometraje_servicio: parseInt(document.getElementById('hist-kilometraje').value)
-    };
-    try {
-      const res = await fetch(`${API}/historial`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(body)
-      });
-      const data = await res.json();
-      if (!res.ok) return showAlert('historial-alert', data.error, 'error');
-      showAlert('historial-alert', 'Servicio registrado exitosamente', 'success');
-      ['hist-vehiculo-id','hist-descripcion','hist-kilometraje'].forEach(id => document.getElementById(id).value = '');
-    } catch { showAlert('historial-alert', 'Error de conexión', 'error'); }
-  }
-
-  // --- CAMBIO DE CONTRASEÑA ---
-  async function cambiarPassword() {
-    const passwordActual = document.getElementById('cp-actual').value;
-    const passwordNueva = document.getElementById('cp-nueva').value;
-    const confirmarPasswordNueva = document.getElementById('cp-confirmar').value;
-
-    if (!passwordActual || !passwordNueva || !confirmarPasswordNueva) {
-      return showAlert('cambiar-password-alert', 'Todos los campos son obligatorios', 'error');
-    }
-    if (passwordNueva !== confirmarPasswordNueva) {
-      return showAlert('cambiar-password-alert', 'La nueva contraseña y la confirmación no coinciden', 'error');
-    }
-    if (passwordNueva.length < 6) {
-      return showAlert('cambiar-password-alert', 'La contraseña debe tener al menos 6 caracteres', 'error');
-    }
-
-    try {
-      const res = await fetch(`${API}/auth/cambiar-password`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ passwordActual, passwordNueva, confirmarPasswordNueva })
-      });
-      const data = await res.json();
-      if (!res.ok) return showAlert('cambiar-password-alert', data.error, 'error');
-      showAlert('cambiar-password-alert', 'Contraseña actualizada correctamente', 'success');
-      document.getElementById('cp-actual').value = '';
-      document.getElementById('cp-nueva').value = '';
-      document.getElementById('cp-confirmar').value = '';
-    } catch {
-      showAlert('cambiar-password-alert', 'Error de conexión con el servidor', 'error');
-    }
-  }
-
-  // --- HELPERS ---
-  function formatRol(rol) {
-    const roles = { dueno: 'Dueño', taller: 'Taller', admin: 'Administrador' };
-    return roles[rol] || rol;
-  }
-
-  function showAlert(id, msg, tipo) {
-    document.getElementById(id).innerHTML = `<div class="alert alert-${tipo}">${msg}</div>`;
-    setTimeout(() => document.getElementById(id).innerHTML = '', 4000);
-  }
-
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Enter') {
-      if (document.getElementById('form-login').style.display !== 'none') login();
-    }
-  });
-</script>
+<script src="js/app.js"></script>
 </body>
 </html>
