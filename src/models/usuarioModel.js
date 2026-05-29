@@ -1,58 +1,48 @@
-/* ==========================================================
-   ARCHIVO: src/models/usuarioModel.js
-   ROL: Operaciones de base de datos para la tabla "usuarios".
-   FUNCIONES:
-     - crear                  → INSERT nuevo usuario
-     - buscarPorEmail         → SELECT por email (para login y registro)
-     - buscarPorId            → SELECT por id (sin exponer password)
-     - buscarPorIdConPassword → SELECT por id incluyendo password
-                                (solo para cambio de contraseña)
-     - actualizarPassword     → UPDATE del hash de la contraseña
-   USADO EN: src/controllers/authController.js
-   ========================================================== */
-
 const db = require('../config/database');
 
 const Usuario = {
 
-    // Crea un usuario nuevo. passwordHash ya viene hasheado con bcrypt.
+    // Crear un usuario nuevo
     crear: (nombre, email, passwordHash, rol) => {
-        return db.prepare(`
+        const query = db.prepare(`
             INSERT INTO usuarios (nombre, email, password, rol)
             VALUES (?, ?, ?, ?)
-        `).run(nombre, email, passwordHash, rol);
+        `);
+        return query.run(nombre, email, passwordHash, rol);
     },
 
-    // Busca por email. Devuelve TODOS los campos incluyendo password
-    // (necesario para verificar contraseña en el login).
+    // Buscar usuario por email
     buscarPorEmail: (email) => {
-        return db.prepare(`
+        const query = db.prepare(`
             SELECT * FROM usuarios WHERE email = ?
-        `).get(email);
+        `);
+        return query.get(email);
     },
 
-    // Busca por id SIN devolver la contraseña (para respuestas al cliente).
+    // Buscar usuario por id
     buscarPorId: (id) => {
-        return db.prepare(`
+        const query = db.prepare(`
             SELECT id, nombre, email, rol, creado_en
             FROM usuarios WHERE id = ?
-        `).get(id);
+        `);
+        return query.get(id);
     },
 
-    // Busca por id CON contraseña. Solo usar cuando se necesita verificar
-    // la contraseña actual (endpoint cambiar-password).
+    // Buscar usuario por id incluyendo password (solo para login o cambio de contraseña)
     buscarPorIdConPassword: (id) => {
-        return db.prepare(`
+        const query = db.prepare(`
             SELECT id, nombre, email, rol, password
             FROM usuarios WHERE id = ?
-        `).get(id);
+        `);
+        return query.get(id);
     },
 
-    // Actualiza el hash de contraseña de un usuario.
+    // Actualizar la contraseña de un usuario
     actualizarPassword: (id, passwordHash) => {
-        return db.prepare(`
+        const query = db.prepare(`
             UPDATE usuarios SET password = ? WHERE id = ?
-        `).run(passwordHash, id);
+        `);
+        return query.run(passwordHash, id);
     }
 };
 

@@ -5,561 +5,200 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HistoryCar</title>
   <style>
-    /* ==========================================================
-       VARIABLES GLOBALES
-       - Colores, sombras, radios y curvas de easing personalizadas.
-       - Las curvas siguen la filosofía de Emil Kowalski:
-         ease-out para entradas (rápido al inicio → sensación de respuesta),
-         ease-in-out para movimientos en pantalla.
-       ========================================================== */
-    :root {
-      --primary:       #1a1a2e;
-      --primary-hover: #16213e;
-      --success:       #16a34a;
-      --success-hover: #15803d;
-      --danger:        #dc2626;
-      --danger-hover:  #b91c1c;
-      --bg:            #f0f2f5;
-      --surface:       #ffffff;
-      --border:        #e5e7eb;
-      --text:          #111827;
-      --text-muted:    #6b7280;
-
-      --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
-      --shadow:    0 4px 16px rgba(0,0,0,0.08);
-      --radius:    10px;
-
-      /* Easing curves (Emil Kowalski - animations.dev) */
-      --ease-out:    cubic-bezier(0.23, 1, 0.32, 1);
-      --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
-    }
-
-    /* ==========================================================
-       RESET Y BASE
-       ========================================================== */
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.5;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f2f5;
+      color: #333;
     }
 
-    /* ==========================================================
-       HEADER
-       ========================================================== */
     header {
-      background: var(--primary);
+      background: #1a1a2e;
       color: white;
-      padding: 14px 32px;
+      padding: 16px 32px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
 
-    header h1 {
-      font-size: 1.3rem;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-    }
-
-    #user-info {
-      font-size: 0.85rem;
-      opacity: 0.75;
-      display: none;
-    }
+    header h1 { font-size: 1.5rem; letter-spacing: 1px; }
+    header span { font-size: 0.85rem; opacity: 0.7; }
 
     #btn-logout {
-      background: rgba(255,255,255,0.1);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.2);
-      padding: 7px 14px;
-      border-radius: 7px;
-      cursor: pointer;
-      font-size: 0.85rem;
-      font-weight: 500;
-      display: none;
-      /* Especificamos solo las propiedades que cambian (no `all`) */
-      transition: background 160ms var(--ease-out), transform 160ms var(--ease-out);
-    }
-
-    /* Hover solo en dispositivos con puntero (no pantallas táctiles) */
-    @media (hover: hover) and (pointer: fine) {
-      #btn-logout:hover { background: rgba(255,255,255,0.2); }
-    }
-
-    /* Press feedback: escala leve al hacer click */
-    #btn-logout:active { transform: scale(0.97); }
-
-    /* ==========================================================
-       SECCIÓN DE AUTH (login / registro)
-       ========================================================== */
-    #auth-section {
-      background: var(--surface);
-      border-radius: 14px;
-      padding: 40px;
-      max-width: 420px;
-      margin: 64px auto;
-      box-shadow: var(--shadow);
-      border: 1px solid var(--border);
-    }
-
-    #auth-section h2 {
-      margin-bottom: 24px;
-      color: var(--primary);
-      text-align: center;
-      font-size: 1.4rem;
-      font-weight: 700;
-    }
-
-    /* Tabs de login / registro */
-    .tabs {
-      display: flex;
-      margin-bottom: 24px;
-      border-bottom: 2px solid var(--border);
-    }
-
-    .tab {
-      flex: 1;
-      text-align: center;
-      padding: 10px;
-      cursor: pointer;
-      font-weight: 600;
-      color: var(--text-muted);
-      border-bottom: 3px solid transparent;
-      margin-bottom: -2px;
-      transition: color 160ms var(--ease-out), border-color 160ms var(--ease-out);
-    }
-
-    .tab.active {
-      color: var(--primary);
-      border-bottom-color: var(--primary);
-    }
-
-    /* ==========================================================
-       FORMULARIOS
-       ========================================================== */
-    .form-group { margin-bottom: 14px; }
-
-    .form-group label {
-      display: block;
-      font-size: 0.8rem;
-      font-weight: 600;
-      margin-bottom: 5px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-    }
-
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      font-size: 0.95rem;
-      background: var(--surface);
-      color: var(--text);
-      /* Solo transicionar border-color y box-shadow (no `all`) */
-      transition: border-color 160ms var(--ease-out), box-shadow 160ms var(--ease-out);
-    }
-
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(26,26,46,0.08);
-    }
-
-    /* ==========================================================
-       BOTONES
-       - Press feedback con scale(0.97) — da sensación de respuesta
-       - Hover solo en dispositivos con puntero (no táctil)
-       ========================================================== */
-    .btn {
-      width: 100%;
-      padding: 11px 16px;
-      background: var(--primary);
+      background: #e74c3c;
       color: white;
       border: none;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 6px;
       cursor: pointer;
-      transition: background 160ms var(--ease-out), transform 160ms var(--ease-out);
+      display: none;
     }
 
-    @media (hover: hover) and (pointer: fine) {
-      .btn:hover           { background: var(--primary-hover); }
-      .btn-success:hover   { background: var(--success-hover); }
-      .btn-danger:hover    { background: var(--danger-hover); }
-      .btn-ghost:hover     { border-color: var(--primary); background: rgba(26,26,46,0.04); }
+    #user-info { font-size: 0.9rem; opacity: 0.85; display: none; }
+
+    .container { max-width: 900px; margin: 40px auto; padding: 0 16px; }
+
+    /* AUTH */
+    #auth-section {
+      background: white;
+      border-radius: 12px;
+      padding: 40px;
+      max-width: 420px;
+      margin: 60px auto;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     }
 
-    .btn:active          { transform: scale(0.97); }
-    .btn:disabled        { opacity: 0.55; cursor: not-allowed; transform: none; }
-    .btn-sm              { width: auto; padding: 8px 14px; font-size: 0.85rem; }
-    .btn-danger          { background: var(--danger); }
-    .btn-success         { background: var(--success); }
-    .btn-ghost           { background: transparent; color: var(--primary); border: 1.5px solid var(--border); }
+    #auth-section h2 { margin-bottom: 24px; color: #1a1a2e; text-align: center; }
 
-    /* ==========================================================
-       ALERTAS (mensajes de éxito / error)
-       - @starting-style anima la entrada desde arriba con opacidad
-       - prefers-reduced-motion elimina el movimiento para quienes
-         tienen sensibilidad al movimiento
-       ========================================================== */
+    .tabs { display: flex; margin-bottom: 24px; border-bottom: 2px solid #eee; }
+    .tab {
+      flex: 1; text-align: center; padding: 10px;
+      cursor: pointer; font-weight: 600; color: #888;
+      border-bottom: 3px solid transparent; margin-bottom: -2px;
+      transition: all 0.2s;
+    }
+    .tab.active { color: #1a1a2e; border-bottom-color: #1a1a2e; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 0.85rem; margin-bottom: 6px; color: #555; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 10px 12px;
+      border: 1px solid #ddd; border-radius: 8px;
+      font-size: 0.95rem; transition: border 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus {
+      outline: none; border-color: #1a1a2e;
+    }
+
+    .btn {
+      width: 100%; padding: 12px;
+      background: #1a1a2e; color: white;
+      border: none; border-radius: 8px;
+      font-size: 1rem; font-weight: 600;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .btn:hover { background: #16213e; }
+    .btn-sm {
+      width: auto; padding: 8px 16px;
+      font-size: 0.85rem; border-radius: 6px;
+    }
+    .btn-danger { background: #e74c3c; }
+    .btn-danger:hover { background: #c0392b; }
+    .btn-success { background: #27ae60; }
+    .btn-success:hover { background: #219a52; }
+
     .alert {
-      padding: 11px 15px;
-      border-radius: 8px;
-      margin-bottom: 14px;
-      font-size: 0.88rem;
-      font-weight: 500;
-      transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-out);
-
-      @starting-style {
-        opacity: 0;
-        transform: translateY(-6px);
-      }
+      padding: 12px 16px; border-radius: 8px;
+      margin-bottom: 16px; font-size: 0.9rem;
     }
+    .alert-error { background: #fde8e8; color: #c0392b; }
+    .alert-success { background: #e8f8f0; color: #27ae60; }
 
-    .alert-error   { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
-    .alert-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
-
-    @media (prefers-reduced-motion: reduce) {
-      .alert { transition: none; }
-      .alert { @starting-style { opacity: 0; transform: none; } }
-    }
-
-    /* ==========================================================
-       DASHBOARD (contenedor principal post-login)
-       ========================================================== */
+    /* DASHBOARD */
     #dashboard { display: none; }
 
-    .container {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 32px 16px;
-    }
-
-    /* Tabs de navegación del dashboard */
     .nav-tabs {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 24px;
+      display: flex; gap: 8px; margin-bottom: 24px;
       flex-wrap: wrap;
     }
-
     .nav-tab {
-      padding: 9px 18px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 0.88rem;
-      background: var(--surface);
-      color: var(--text-muted);
-      border: 1.5px solid var(--border);
-      transition: background 160ms var(--ease-out),
-                  color      160ms var(--ease-out),
-                  border-color 160ms var(--ease-out),
-                  transform  160ms var(--ease-out);
+      padding: 10px 20px; border-radius: 8px;
+      cursor: pointer; font-weight: 600;
+      background: white; color: #555;
+      border: 2px solid #ddd; transition: all 0.2s;
     }
-
-    @media (hover: hover) and (pointer: fine) {
-      .nav-tab:hover { border-color: var(--primary); color: var(--primary); }
-    }
-
-    .nav-tab:active { transform: scale(0.97); }
-
     .nav-tab.active {
-      background: var(--primary);
-      color: white;
-      border-color: var(--primary);
+      background: #1a1a2e; color: white; border-color: #1a1a2e;
     }
 
-    /* ==========================================================
-       PANELES
-       - Al activarse, la animación panelIn hace la entrada suave
-       - Nada en el mundo real aparece de la nada (Emil Kowalski)
-         → empieza desde opacity 0 y translateY(8px), no desde scale(0)
-       ========================================================== */
     .panel { display: none; }
+    .panel.active { display: block; }
 
-    .panel.active {
-      display: block;
-      animation: panelIn 200ms var(--ease-out) both;
-    }
-
-    @keyframes panelIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .panel.active { animation: none; }
-    }
-
-    /* ==========================================================
-       CARDS
-       ========================================================== */
     .card {
-      background: var(--surface);
-      border-radius: var(--radius);
-      padding: 24px;
-      margin-bottom: 16px;
-      box-shadow: var(--shadow-sm);
-      border: 1px solid var(--border);
+      background: white; border-radius: 12px;
+      padding: 24px; margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
     }
+    .card h3 { margin-bottom: 16px; color: #1a1a2e; font-size: 1.1rem; }
 
-    .card h3 {
-      margin-bottom: 18px;
-      color: var(--primary);
-      font-size: 1rem;
-      font-weight: 700;
-    }
-
-    /* ==========================================================
-       TABLAS
-       ========================================================== */
-    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
-
-    th {
-      background: #f9fafb;
-      text-align: left;
-      padding: 9px 12px;
-      border-bottom: 1.5px solid var(--border);
-      color: var(--text-muted);
-      font-size: 0.74rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      font-weight: 600;
-    }
-
-    td { padding: 11px 12px; border-bottom: 1px solid #f3f4f6; }
-    tr:last-child td { border-bottom: none; }
-
-    @media (hover: hover) and (pointer: fine) {
-      tr:hover td { background: #fafafa; }
-    }
-
-    /* Filas de tabla con stagger: entran escalonadas (30-80ms entre ellas) */
-    tbody tr {
-      opacity: 0;
-      animation: rowIn 240ms var(--ease-out) forwards;
-    }
-
-    tbody tr:nth-child(1) { animation-delay: 0ms; }
-    tbody tr:nth-child(2) { animation-delay: 40ms; }
-    tbody tr:nth-child(3) { animation-delay: 80ms; }
-    tbody tr:nth-child(4) { animation-delay: 120ms; }
-    tbody tr:nth-child(5) { animation-delay: 160ms; }
-    tbody tr:nth-child(n+6) { animation-delay: 200ms; }
-
-    @keyframes rowIn {
-      from { opacity: 0; transform: translateY(4px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      tbody tr { animation: none; opacity: 1; }
-    }
-
-    /* ==========================================================
-       BADGES (etiquetas de rol, tipo, estado)
-       ========================================================== */
-    .badge {
-      padding: 3px 9px;
-      border-radius: 20px;
-      font-size: 0.72rem;
-      font-weight: 600;
-      display: inline-block;
-    }
-
-    .badge-dueno      { background: #dbeafe; color: #1e40af; }
-    .badge-taller     { background: #fef3c7; color: #92400e; }
-    .badge-admin      { background: #fce7f3; color: #831843; }
-    .badge-pagado     { background: #dcfce7; color: #166534; }
-    .badge-pendiente  { background: #fee2e2; color: #991b1b; }
-    .badge-service    { background: #e0f2fe; color: #0369a1; }
-    .badge-reparacion { background: #fef3c7; color: #92400e; }
-    .badge-inspeccion { background: #f3e8ff; color: #6b21a8; }
-    .badge-siniestro  { background: #fee2e2; color: #991b1b; }
-    .badge-multa      { background: #fee2e2; color: #991b1b; }
-    .badge-patente    { background: #fef3c7; color: #92400e; }
-    .badge-otro       { background: #f3f4f6; color: #374151; }
-
-    /* ==========================================================
-       ESTADO VACÍO
-       ========================================================== */
-    .empty {
-      text-align: center;
-      padding: 40px 32px;
-      color: var(--text-muted);
+    table {
+      width: 100%; border-collapse: collapse;
       font-size: 0.9rem;
     }
-
-    .empty-icon { font-size: 2rem; margin-bottom: 10px; }
-
-    /* ==========================================================
-       LAYOUT
-       ========================================================== */
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-
-    @media (max-width: 600px) {
-      .grid-2 { grid-template-columns: 1fr; }
+    th {
+      background: #f8f9fa; text-align: left;
+      padding: 10px 12px; border-bottom: 2px solid #eee;
+      color: #555; font-size: 0.8rem; text-transform: uppercase;
     }
+    td { padding: 12px; border-bottom: 1px solid #f0f0f0; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafafa; }
 
-    .search-row {
-      display: flex;
-      gap: 10px;
-      align-items: flex-end;
-      margin-bottom: 20px;
+    .badge {
+      padding: 4px 10px; border-radius: 20px;
+      font-size: 0.75rem; font-weight: 600;
     }
+    .badge-dueno { background: #dbeafe; color: #1d4ed8; }
+    .badge-taller { background: #fef3c7; color: #b45309; }
+    .badge-admin { background: #fce7f3; color: #9d174d; }
 
-    .search-row .form-group { flex: 1; margin-bottom: 0; }
-    .search-row button { flex-shrink: 0; }
+    .empty { text-align: center; padding: 32px; color: #aaa; font-size: 0.95rem; }
 
-    /* ==========================================================
-       ITEMS DE HISTORIAL
-       - Stagger: cada item entra con un delay escalonado
-       - La animación entra desde la izquierda (consistente con
-         la barra de color de la izquierda)
-       ========================================================== */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    .search-row { display: flex; gap: 10px; }
+    .search-row input { flex: 1; }
+    .search-row button { width: auto; }
+
     .historial-item {
-      border-left: 3px solid var(--primary);
-      padding: 14px 16px;
-      margin-bottom: 10px;
-      background: #f9fafb;
-      border-radius: 0 8px 8px 0;
-      opacity: 0;
-      animation: itemIn 280ms var(--ease-out) forwards;
+      border-left: 4px solid #1a1a2e;
+      padding: 12px 16px; margin-bottom: 12px;
+      background: #f8f9fa; border-radius: 0 8px 8px 0;
     }
-
-    .historial-item:nth-child(1) { animation-delay: 0ms; }
-    .historial-item:nth-child(2) { animation-delay: 50ms; }
-    .historial-item:nth-child(3) { animation-delay: 100ms; }
-    .historial-item:nth-child(4) { animation-delay: 150ms; }
-    .historial-item:nth-child(5) { animation-delay: 200ms; }
-    .historial-item:nth-child(n+6) { animation-delay: 250ms; }
-
-    @keyframes itemIn {
-      from { opacity: 0; transform: translateX(-8px); }
-      to   { opacity: 1; transform: translateX(0); }
+    .historial-item .tipo {
+      font-weight: 700; color: #1a1a2e;
+      text-transform: uppercase; font-size: 0.8rem;
     }
-
-    @media (prefers-reduced-motion: reduce) {
-      .historial-item { animation: none; opacity: 1; }
-    }
-
-    .historial-item .tipo  { margin-bottom: 4px; }
-    .historial-item .desc  { margin: 4px 0; font-size: 0.92rem; }
-    .historial-item .meta  {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      margin-top: 6px;
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    /* ==========================================================
-       INFO DE VEHÍCULO (tarjeta resumen al buscar por patente)
-       ========================================================== */
-    .vehiculo-info {
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 16px;
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .vehiculo-info .patente {
-      font-size: 1.4rem;
-      font-weight: 800;
-      color: var(--primary);
-      letter-spacing: 2px;
-      font-family: 'Courier New', monospace;
-    }
-
-    .vehiculo-info .details {
-      font-size: 0.88rem;
-      color: var(--text-muted);
-      line-height: 1.6;
-    }
-
-    .vehiculo-info .details strong { color: var(--text); }
-
-    /* ==========================================================
-       SPINNER DE CARGA (dentro de botones)
-       ========================================================== */
-    .spinner {
-      display: inline-block;
-      width: 13px;
-      height: 13px;
-      border: 2px solid rgba(255,255,255,0.35);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.6s linear infinite;
-      vertical-align: middle;
-      margin-right: 6px;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .historial-item .desc { margin: 4px 0; font-size: 0.95rem; }
+    .historial-item .meta { font-size: 0.8rem; color: #888; }
   </style>
 </head>
 <body>
 
-<!-- ==========================================================
-     HEADER: barra superior con nombre de usuario y logout
-     ========================================================== -->
 <header>
-  <h1>HistoryCar</h1>
-  <div style="display:flex;align-items:center;gap:14px;">
+  <h1>🚗 HistoryCar</h1>
+  <div style="display:flex;align-items:center;gap:16px;">
     <span id="user-info"></span>
     <button id="btn-logout" onclick="logout()">Cerrar sesión</button>
   </div>
 </header>
 
-<!-- ==========================================================
-     AUTH: pantalla de login y registro
-     Se oculta después de un login exitoso
-     ========================================================== -->
+<!-- AUTH -->
 <div id="auth-section">
   <h2>HistoryCar</h2>
-
-  <!-- Tabs: Iniciar sesión / Registrarse -->
   <div class="tabs">
     <div class="tab active" onclick="switchAuth('login')">Iniciar sesión</div>
-    <div class="tab"        onclick="switchAuth('registro')">Registrarse</div>
+    <div class="tab" onclick="switchAuth('registro')">Registrarse</div>
   </div>
 
   <div id="auth-alert"></div>
 
-  <!-- Formulario de Login -->
+  <!-- Login -->
   <div id="form-login">
     <div class="form-group">
       <label>Email</label>
-      <input type="email" id="login-email" placeholder="juan@email.com" />
+      <input type="email" id="login-email" placeholder="juan@gmail.com" />
     </div>
     <div class="form-group">
       <label>Contraseña</label>
       <input type="password" id="login-password" placeholder="••••••" />
     </div>
-    <button class="btn" id="btn-login" onclick="login()">Entrar</button>
+    <button class="btn" onclick="login()">Entrar</button>
   </div>
 
-  <!-- Formulario de Registro -->
+  <!-- Registro -->
   <div id="form-registro" style="display:none;">
     <div class="form-group">
       <label>Nombre completo</label>
@@ -567,7 +206,7 @@
     </div>
     <div class="form-group">
       <label>Email</label>
-      <input type="email" id="reg-email" placeholder="juan@email.com" />
+      <input type="email" id="reg-email" placeholder="juan@gmail.com" />
     </div>
     <div class="form-group">
       <label>Contraseña</label>
@@ -581,78 +220,51 @@
         <option value="admin">Administrador</option>
       </select>
     </div>
-    <button class="btn" id="btn-registro" onclick="registro()">Crear cuenta</button>
+    <button class="btn" onclick="registro()">Crear cuenta</button>
   </div>
 </div>
 
-<!-- ==========================================================
-     DASHBOARD: vista principal post-login
-     Paneles visibles según el rol del usuario
-     ========================================================== -->
+<!-- DASHBOARD -->
 <div id="dashboard">
   <div class="container">
-
-    <!-- Navegación entre paneles -->
     <div class="nav-tabs">
-      <div class="nav-tab active"            onclick="switchPanel('mis-vehiculos', this)">Mis Vehículos</div>
-      <div class="nav-tab"                   onclick="switchPanel('buscar', this)">Buscar por Patente</div>
-      <div class="nav-tab"                   onclick="switchPanel('historial', this)">Historial</div>
-      <div class="nav-tab"                   onclick="switchPanel('deudas', this)">Deudas</div>
-      <div id="tab-agregar-vehiculo"
-           class="nav-tab"                   onclick="switchPanel('agregar-vehiculo', this)">+ Agregar Vehículo</div>
-      <div class="nav-tab"                   onclick="switchPanel('cambiar-password', this)">Mi cuenta</div>
+      <div class="nav-tab active" onclick="switchPanel('mis-vehiculos')">Mis Vehículos</div>
+      <div class="nav-tab" onclick="switchPanel('buscar')">Buscar por Patente</div>
+      <div class="nav-tab" onclick="switchPanel('historial')">Historial</div>
+      <div id="tab-agregar-vehiculo" class="nav-tab" onclick="switchPanel('agregar-vehiculo')">+ Agregar Vehículo</div>
+      <div class="nav-tab" onclick="switchPanel('cambiar-password')">Cambiar contraseña</div>
     </div>
 
-    <!-- ======================================================
-         PANEL: Mis Vehículos
-         Tabla de todos los vehículos del usuario autenticado
-         ====================================================== -->
+    <!-- Panel: Mis Vehículos -->
     <div id="panel-mis-vehiculos" class="panel active">
       <div class="card">
         <h3>Mis Vehículos</h3>
-        <div id="lista-vehiculos">
-          <div class="empty"><div class="empty-icon">🚗</div>Cargando...</div>
-        </div>
+        <div id="lista-vehiculos"><div class="empty">Cargando...</div></div>
       </div>
     </div>
 
-    <!-- ======================================================
-         PANEL: Buscar por Patente
-         Muestra datos del vehículo y del dueño
-         ====================================================== -->
+    <!-- Panel: Buscar por Patente -->
     <div id="panel-buscar" class="panel">
       <div class="card">
         <h3>Buscar vehículo por patente</h3>
         <div class="search-row">
-          <div class="form-group">
-            <label>Patente</label>
-            <input type="text" id="input-patente" placeholder="Ej: ABC123" style="text-transform:uppercase;" />
-          </div>
+          <input type="text" id="input-patente" placeholder="Ej: ABC123" style="text-transform:uppercase;" />
           <button class="btn btn-sm" onclick="buscarPatente()">Buscar</button>
         </div>
-        <div id="resultado-busqueda"></div>
+        <div id="resultado-busqueda" style="margin-top:20px;"></div>
       </div>
     </div>
 
-    <!-- ======================================================
-         PANEL: Historial
-         - Buscar historial por patente
-         - Agregar servicio (visible solo para taller/admin)
-         ====================================================== -->
+    <!-- Panel: Historial -->
     <div id="panel-historial" class="panel">
       <div class="card">
-        <h3>Consultar historial por patente</h3>
-        <div class="search-row">
-          <div class="form-group">
-            <label>Patente del vehículo</label>
-            <input type="text" id="input-patente-historial" placeholder="Ej: ABC123" style="text-transform:uppercase;" />
-          </div>
+        <h3>Ver historial de vehículo</h3>
+        <div class="search-row" style="margin-bottom:20px;">
+          <input type="text" id="input-vehiculo-id" placeholder="Ej: 1 (ID) o ABC123 (patente)" style="text-transform:uppercase;" />
           <button class="btn btn-sm" onclick="verHistorial()">Ver historial</button>
         </div>
         <div id="resultado-historial"></div>
       </div>
-
-      <!-- Agregar servicio: solo visible para taller/admin (se controla en JS) -->
       <div id="card-agregar-historial" class="card">
         <h3>Agregar servicio al historial</h3>
         <div id="historial-alert"></div>
@@ -662,7 +274,7 @@
             <input type="number" id="hist-vehiculo-id" placeholder="1" />
           </div>
           <div class="form-group">
-            <label>Tipo de servicio</label>
+            <label>Tipo</label>
             <select id="hist-tipo">
               <option value="service">Service</option>
               <option value="reparacion">Reparación</option>
@@ -676,114 +288,18 @@
           </div>
           <div class="form-group">
             <label>Kilometraje</label>
-            <input type="number" id="hist-kilometraje" placeholder="50000" min="0" />
+            <input type="number" id="hist-kilometraje" placeholder="50000" />
           </div>
         </div>
         <div class="form-group">
           <label>Descripción</label>
           <input type="text" id="hist-descripcion" placeholder="Cambio de aceite y filtros" />
         </div>
-        <button class="btn" id="btn-agregar-hist" onclick="agregarHistorial()">Guardar servicio</button>
+        <button class="btn" onclick="agregarHistorial()">Guardar servicio</button>
       </div>
     </div>
 
-    <!-- ======================================================
-         PANEL: Deudas
-         - Consultar deudas de un vehículo por patente
-         - Registrar deuda (visible solo para taller/admin)
-         ====================================================== -->
-    <div id="panel-deudas" class="panel">
-      <div class="card">
-        <h3>Consultar deudas por patente</h3>
-        <div class="search-row">
-          <div class="form-group">
-            <label>Patente</label>
-            <input type="text" id="input-patente-deudas" placeholder="Ej: ABC123" style="text-transform:uppercase;" />
-          </div>
-          <button class="btn btn-sm" onclick="verDeudas()">Consultar</button>
-        </div>
-        <div id="resultado-deudas"></div>
-      </div>
-
-      <!-- Registrar deuda: solo visible para taller/admin -->
-      <div id="card-agregar-deuda" class="card">
-        <h3>Registrar deuda o multa</h3>
-        <div id="deuda-alert"></div>
-        <div class="grid-2">
-          <div class="form-group">
-            <label>ID del vehículo</label>
-            <input type="number" id="deuda-vehiculo-id" placeholder="1" />
-          </div>
-          <div class="form-group">
-            <label>Tipo</label>
-            <select id="deuda-tipo">
-              <option value="multa">Multa de tránsito</option>
-              <option value="patente">Patente impaga</option>
-              <option value="otro">Otro cargo</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Monto ($)</label>
-            <input type="number" id="deuda-monto" placeholder="5000" step="0.01" min="0" />
-          </div>
-          <div class="form-group">
-            <label>Fecha</label>
-            <input type="date" id="deuda-fecha" />
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Descripción</label>
-          <input type="text" id="deuda-descripcion" placeholder="Infracción semáforo en rojo" />
-        </div>
-        <button class="btn btn-danger" id="btn-agregar-deuda" onclick="agregarDeuda()">Registrar deuda</button>
-      </div>
-    </div>
-
-    <!-- ======================================================
-         PANEL: Agregar Vehículo
-         Solo visible para usuarios con rol 'dueno' o 'admin'
-         ====================================================== -->
-    <div id="panel-agregar-vehiculo" class="panel">
-      <div class="card">
-        <h3>Registrar nuevo vehículo</h3>
-        <div id="vehiculo-alert"></div>
-        <div class="grid-2">
-          <div class="form-group">
-            <label>Patente</label>
-            <input type="text" id="veh-patente" placeholder="ABC123" style="text-transform:uppercase;" />
-          </div>
-          <div class="form-group">
-            <label>VIN (opcional)</label>
-            <input type="text" id="veh-vin" placeholder="1HGBH41JXMN109186" />
-          </div>
-          <div class="form-group">
-            <label>Marca</label>
-            <input type="text" id="veh-marca" placeholder="Toyota" />
-          </div>
-          <div class="form-group">
-            <label>Modelo</label>
-            <input type="text" id="veh-modelo" placeholder="Corolla" />
-          </div>
-          <div class="form-group">
-            <label>Año</label>
-            <input type="number" id="veh-anio" placeholder="2020" min="1900" max="2030" />
-          </div>
-          <div class="form-group">
-            <label>Color (opcional)</label>
-            <input type="text" id="veh-color" placeholder="Blanco" />
-          </div>
-          <div class="form-group">
-            <label>Kilometraje actual</label>
-            <input type="number" id="veh-kilometraje" placeholder="0" min="0" />
-          </div>
-        </div>
-        <button class="btn btn-success" id="btn-agregar-veh" onclick="agregarVehiculo()">Registrar vehículo</button>
-      </div>
-    </div>
-
-    <!-- ======================================================
-         PANEL: Mi cuenta (cambiar contraseña)
-         ====================================================== -->
+    <!-- Panel: Cambiar contraseña -->
     <div id="panel-cambiar-password" class="panel">
       <div class="card">
         <h3>Cambiar contraseña</h3>
@@ -800,7 +316,38 @@
           <label>Confirmar nueva contraseña</label>
           <input type="password" id="cp-confirmar" placeholder="••••••" />
         </div>
-        <button class="btn" id="btn-cambiar-pw" onclick="cambiarPassword()">Actualizar contraseña</button>
+        <button class="btn" onclick="cambiarPassword()">Actualizar contraseña</button>
+      </div>
+    </div>
+
+    <!-- Panel: Agregar Vehículo -->
+    <div id="panel-agregar-vehiculo" class="panel">
+      <div class="card">
+        <h3>Registrar nuevo vehículo</h3>
+        <div id="vehiculo-alert"></div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Patente</label>
+            <input type="text" id="veh-patente" placeholder="ABC123" style="text-transform:uppercase;" />
+          </div>
+          <div class="form-group">
+            <label>Marca</label>
+            <input type="text" id="veh-marca" placeholder="Toyota" />
+          </div>
+          <div class="form-group">
+            <label>Modelo</label>
+            <input type="text" id="veh-modelo" placeholder="Corolla" />
+          </div>
+          <div class="form-group">
+            <label>Año</label>
+            <input type="number" id="veh-anio" placeholder="2020" />
+          </div>
+          <div class="form-group">
+            <label>Kilometraje actual</label>
+            <input type="number" id="veh-kilometraje" placeholder="0" />
+          </div>
+        </div>
+        <button class="btn btn-success" onclick="agregarVehiculo()">Registrar vehículo</button>
       </div>
     </div>
 
@@ -808,528 +355,253 @@
 </div>
 
 <script>
-  /* ==========================================================
-     CONFIGURACIÓN GLOBAL
-     API usa URL relativa para funcionar tanto en desarrollo
-     (localhost:3000) como en producción sin cambios de código.
-     ========================================================== */
-  const API = '/api';
-  let token         = localStorage.getItem('token');
+  const API = 'http://localhost:3000/api';
+  let token = localStorage.getItem('token');
   let usuarioActual = JSON.parse(localStorage.getItem('usuario') || 'null');
 
-  // Si ya hay sesión guardada, ir directo al dashboard
   if (token && usuarioActual) mostrarDashboard();
 
-  /* ==========================================================
-     AUTH: login, registro, logout
-     ========================================================== */
-
-  // Alterna entre el formulario de login y registro
+  // --- AUTH ---
   function switchAuth(modo) {
-    document.querySelectorAll('.tab').forEach((t, i) => {
-      t.classList.toggle('active', (modo === 'login' && i === 0) || (modo === 'registro' && i === 1));
-    });
-    document.getElementById('form-login').style.display    = modo === 'login'    ? 'block' : 'none';
+    document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', (modo === 'login' && i === 0) || (modo === 'registro' && i === 1)));
+    document.getElementById('form-login').style.display = modo === 'login' ? 'block' : 'none';
     document.getElementById('form-registro').style.display = modo === 'registro' ? 'block' : 'none';
     document.getElementById('auth-alert').innerHTML = '';
   }
 
   async function login() {
-    const btn      = document.getElementById('btn-login');
-    const email    = document.getElementById('login-email').value.trim();
+    const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
-
-    if (!email || !password) return showAlert('auth-alert', 'Completá todos los campos', 'error');
-
-    setLoading(btn, true, 'Entrando...');
     try {
-      const res  = await fetch(`${API}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch(`${API}/auth/login`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
       const data = await res.json();
       if (!res.ok) return showAlert('auth-alert', data.error, 'error');
-
-      // Guardar token y usuario en localStorage para persistir la sesión
-      token         = data.token;
+      token = data.token;
       usuarioActual = data.usuario;
       localStorage.setItem('token', token);
       localStorage.setItem('usuario', JSON.stringify(usuarioActual));
       mostrarDashboard();
-    } catch {
-      showAlert('auth-alert', 'Error de conexión con el servidor', 'error');
-    } finally {
-      setLoading(btn, false);
-    }
+    } catch { showAlert('auth-alert', 'Error de conexión con el servidor', 'error'); }
   }
 
   async function registro() {
-    const btn      = document.getElementById('btn-registro');
-    const nombre   = document.getElementById('reg-nombre').value.trim();
-    const email    = document.getElementById('reg-email').value.trim();
+    const nombre = document.getElementById('reg-nombre').value;
+    const email = document.getElementById('reg-email').value;
     const password = document.getElementById('reg-password').value;
-    const rol      = document.getElementById('reg-rol').value;
-
-    if (!nombre || !email || !password) return showAlert('auth-alert', 'Completá todos los campos', 'error');
-
-    setLoading(btn, true, 'Creando cuenta...');
+    const rol = document.getElementById('reg-rol').value;
     try {
-      const res  = await fetch(`${API}/auth/registro`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch(`${API}/auth/registro`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nombre, email, password, rol })
       });
       const data = await res.json();
       if (!res.ok) return showAlert('auth-alert', data.error, 'error');
-
       showAlert('auth-alert', 'Cuenta creada. Ahora iniciá sesión.', 'success');
       switchAuth('login');
-    } catch {
-      showAlert('auth-alert', 'Error de conexión con el servidor', 'error');
-    } finally {
-      setLoading(btn, false);
-    }
+    } catch { showAlert('auth-alert', 'Error de conexión con el servidor', 'error'); }
   }
 
   function logout() {
     token = null; usuarioActual = null;
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
-    document.getElementById('dashboard').style.display    = 'none';
+    document.getElementById('dashboard').style.display = 'none';
     document.getElementById('auth-section').style.display = 'block';
-    document.getElementById('btn-logout').style.display   = 'none';
-    document.getElementById('user-info').style.display    = 'none';
+    document.getElementById('btn-logout').style.display = 'none';
+    document.getElementById('user-info').style.display = 'none';
   }
 
-  /* ==========================================================
-     MOSTRAR DASHBOARD
-     Configura la vista según el rol del usuario y carga datos
-     ========================================================== */
   function mostrarDashboard() {
     document.getElementById('auth-section').style.display = 'none';
-    document.getElementById('dashboard').style.display    = 'block';
-    document.getElementById('btn-logout').style.display   = 'inline-block';
-    document.getElementById('user-info').style.display    = 'inline';
-    document.getElementById('user-info').textContent      = `${usuarioActual.nombre} · ${formatRol(usuarioActual.rol)}`;
+    document.getElementById('dashboard').style.display = 'block';
+    document.getElementById('btn-logout').style.display = 'inline-block';
+    document.getElementById('user-info').style.display = 'inline';
+    document.getElementById('user-info').textContent = `${usuarioActual.nombre} · ${formatRol(usuarioActual.rol)}`;
 
-    // Control de visibilidad según el rol
-    const esDueno   = ['dueno', 'admin'].includes(usuarioActual.rol);
-    const esTaller  = ['taller', 'admin'].includes(usuarioActual.rol);
+    // Mostrar "Agregar Vehículo" solo para dueño o admin
+    const puedeAgregarVehiculo = ['dueno', 'admin'].includes(usuarioActual.rol);
+    document.getElementById('tab-agregar-vehiculo').style.display = puedeAgregarVehiculo ? '' : 'none';
 
-    // "Agregar Vehículo" solo para dueño y admin
-    document.getElementById('tab-agregar-vehiculo').style.display = esDueno ? '' : 'none';
-
-    // "Agregar servicio" y "Registrar deuda" solo para taller y admin
-    document.getElementById('card-agregar-historial').style.display = esTaller ? '' : 'none';
-    document.getElementById('card-agregar-deuda').style.display     = esTaller ? '' : 'none';
-
-    // Setear fechas por defecto a hoy
-    document.getElementById('hist-fecha').valueAsDate  = new Date();
-    document.getElementById('deuda-fecha').valueAsDate = new Date();
+    // Mostrar "Agregar servicio al historial" solo para taller o admin
+    const puedeCargarHistorial = ['taller', 'admin'].includes(usuarioActual.rol);
+    document.getElementById('card-agregar-historial').style.display = puedeCargarHistorial ? '' : 'none';
 
     cargarMisVehiculos();
+    document.getElementById('hist-fecha').valueAsDate = new Date();
   }
 
-  /* ==========================================================
-     NAVEGACIÓN ENTRE PANELES
-     ========================================================== */
-  function switchPanel(id, tabEl) {
-    document.querySelectorAll('.panel').forEach(p  => p.classList.remove('active'));
+  // --- NAVEGACIÓN ---
+  function switchPanel(id) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
     document.getElementById(`panel-${id}`).classList.add('active');
-    tabEl.classList.add('active');
+    event.target.classList.add('active');
   }
 
-  /* ==========================================================
-     VEHÍCULOS
-     ========================================================== */
-
-  // Carga y muestra todos los vehículos del usuario autenticado
+  // --- VEHÍCULOS ---
   async function cargarMisVehiculos() {
+    const res = await fetch(`${API}/vehiculos/mis-vehiculos`, { headers: { Authorization: `Bearer ${token}` } });
+    const data = await res.json();
     const lista = document.getElementById('lista-vehiculos');
-    lista.innerHTML = '<div class="empty"><div class="empty-icon">🔄</div>Cargando...</div>';
-
-    try {
-      const res  = await fetch(`${API}/vehiculos/mis-vehiculos`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      const vehiculos = data.vehiculos || [];
-
-      if (!vehiculos.length) {
-        return lista.innerHTML = '<div class="empty"><div class="empty-icon">🚗</div>No tenés vehículos registrados.</div>';
-      }
-
-      lista.innerHTML = `
-        <table>
-          <thead><tr>
-            <th>ID</th><th>Patente</th><th>Marca / Modelo</th><th>Año</th><th>Color</th><th>Kilometraje</th>
-          </tr></thead>
-          <tbody>
-            ${vehiculos.map(v => `<tr>
-              <td style="color:var(--text-muted)">#${v.id}</td>
-              <td><strong style="font-family:monospace;letter-spacing:1px">${v.patente}</strong></td>
-              <td>${v.marca} ${v.modelo}</td>
-              <td>${v.anio || '-'}</td>
-              <td>${v.color || '-'}</td>
-              <td>${v.kilometraje != null ? v.kilometraje.toLocaleString('es-AR') + ' km' : '-'}</td>
-            </tr>`).join('')}
-          </tbody>
-        </table>`;
-    } catch {
-      lista.innerHTML = '<div class="empty">Error al cargar vehículos.</div>';
-    }
+    if (!data.vehiculos || !data.vehiculos.length) return lista.innerHTML = '<div class="empty">No tenés vehículos registrados aún.</div>';
+    lista.innerHTML = `
+      <table>
+        <thead><tr><th>ID</th><th>Patente</th><th>Marca</th><th>Modelo</th><th>Año</th><th>Kilometraje</th></tr></thead>
+        <tbody>
+          ${data.vehiculos.map(v => `<tr>
+            <td>${v.id}</td>
+            <td><strong>${v.patente}</strong></td>
+            <td>${v.marca}</td>
+            <td>${v.modelo}</td>
+            <td>${v.anio || '-'}</td>
+            <td>${v.kilometraje !== undefined ? v.kilometraje + ' km' : '-'}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
   }
 
-  // Registra un nuevo vehículo
   async function agregarVehiculo() {
-    const btn = document.getElementById('btn-agregar-veh');
     const body = {
-      patente:     document.getElementById('veh-patente').value.toUpperCase().trim(),
-      vin:         document.getElementById('veh-vin').value.trim() || null,
-      marca:       document.getElementById('veh-marca').value.trim(),
-      modelo:      document.getElementById('veh-modelo').value.trim(),
-      anio:        parseInt(document.getElementById('veh-anio').value),
-      color:       document.getElementById('veh-color').value.trim() || null,
+      patente: document.getElementById('veh-patente').value.trim().toUpperCase(),
+      marca: document.getElementById('veh-marca').value,
+      modelo: document.getElementById('veh-modelo').value,
+      anio: parseInt(document.getElementById('veh-anio').value),
       kilometraje: parseInt(document.getElementById('veh-kilometraje').value) || 0
     };
-
-    if (!body.patente || !body.marca || !body.modelo || !body.anio) {
-      return showAlert('vehiculo-alert', 'Patente, marca, modelo y año son obligatorios', 'error');
-    }
-
-    setLoading(btn, true, 'Registrando...');
     try {
-      const res  = await fetch(`${API}/vehiculos`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      const res = await fetch(`${API}/vehiculos`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(body)
       });
       const data = await res.json();
       if (!res.ok) return showAlert('vehiculo-alert', data.error, 'error');
-
       showAlert('vehiculo-alert', `Vehículo ${body.patente} registrado exitosamente`, 'success');
-      ['veh-patente','veh-vin','veh-marca','veh-modelo','veh-anio','veh-color','veh-kilometraje']
-        .forEach(id => document.getElementById(id).value = '');
+      ['veh-patente','veh-marca','veh-modelo','veh-anio','veh-kilometraje'].forEach(id => document.getElementById(id).value = '');
       cargarMisVehiculos();
-    } catch {
-      showAlert('vehiculo-alert', 'Error de conexión', 'error');
-    } finally {
-      setLoading(btn, false);
-    }
+    } catch { showAlert('vehiculo-alert', 'Error de conexión', 'error'); }
   }
 
-  // Busca un vehículo por patente y muestra sus datos con los del dueño
   async function buscarPatente() {
     const patente = document.getElementById('input-patente').value.toUpperCase().trim();
     if (!patente) return;
-
+    const res = await fetch(`${API}/vehiculos/patente/${patente}`, { headers: { Authorization: `Bearer ${token}` } });
+    const data = await res.json();
     const div = document.getElementById('resultado-busqueda');
-    div.innerHTML = '<div class="empty">Buscando...</div>';
-
-    try {
-      const res = await fetch(`${API}/vehiculos/patente/${patente}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-
-      if (!res.ok) return div.innerHTML = `<div class="alert alert-error">${data.error}</div>`;
-
-      const v = data.vehiculo;
-      div.innerHTML = `
-        <div class="vehiculo-info">
-          <div class="patente">${v.patente}</div>
-          <div class="details">
-            <strong>${v.marca} ${v.modelo}</strong> · ${v.anio || '-'}${v.color ? ` · ${v.color}` : ''}<br>
-            Km: ${v.kilometraje != null ? v.kilometraje.toLocaleString('es-AR') : '-'}
-            ${v.vin ? `<br>VIN: ${v.vin}` : ''}
-            <br>Dueño: <strong>${v.dueno_nombre}</strong> (${v.dueno_email})
-          </div>
-        </div>`;
-    } catch {
-      div.innerHTML = '<div class="alert alert-error">Error de conexión</div>';
-    }
+    if (!res.ok) return div.innerHTML = `<div class="alert alert-error">${data.error}</div>`;
+    const v = data.vehiculo;
+    div.innerHTML = `
+      <table>
+        <thead><tr><th>ID</th><th>Patente</th><th>Marca</th><th>Modelo</th><th>Año</th><th>Kilometraje</th><th>Cliente</th><th>Correo</th></tr></thead>
+        <tbody><tr>
+          <td>${v.id}</td>
+          <td><strong>${v.patente}</strong></td>
+          <td>${v.marca}</td>
+          <td>${v.modelo}</td>
+          <td>${v.anio || '-'}</td>
+          <td>${v.kilometraje !== undefined ? v.kilometraje + ' km' : '-'}</td>
+          <td>${v.dueno_nombre}</td>
+          <td>${v.dueno_email}</td>
+        </tr></tbody>
+      </table>`;
   }
 
-  /* ==========================================================
-     HISTORIAL
-     ========================================================== */
-
-  // Busca y muestra el historial de servicios de un vehículo por patente
+  // --- HISTORIAL ---
   async function verHistorial() {
-    const patente = document.getElementById('input-patente-historial').value.toUpperCase().trim();
-    if (!patente) return;
-
+    const valor = document.getElementById('input-vehiculo-id').value.trim();
+    if (!valor) return;
+    // Si es solo dígitos → buscar por ID; si tiene letras → buscar por patente
+    const url = /^\d+$/.test(valor)
+      ? `${API}/historial/vehiculo/${valor}`
+      : `${API}/historial/patente/${valor.toUpperCase()}`;
+    const res = await fetch(url);
+    const data = await res.json();
     const div = document.getElementById('resultado-historial');
-    div.innerHTML = '<div class="empty">Cargando historial...</div>';
-
-    try {
-      // GET /api/historial/patente/:patente devuelve { vehiculo, historial }
-      const res  = await fetch(`${API}/historial/patente/${patente}`);
-      const data = await res.json();
-
-      if (!res.ok) return div.innerHTML = `<div class="alert alert-error">${data.error}</div>`;
-
-      const veh      = data.vehiculo;
-      const historial = data.historial || [];
-
-      const infoVehiculo = `
-        <div class="vehiculo-info">
-          <div class="patente">${veh.patente}</div>
-          <div class="details">
-            <strong>${veh.marca} ${veh.modelo}</strong> · ${veh.anio || '-'}
-            ${veh.color ? ` · ${veh.color}` : ''}<br>
-            Km: ${veh.kilometraje != null ? veh.kilometraje.toLocaleString('es-AR') : '-'}
-          </div>
-        </div>`;
-
-      if (!historial.length) {
-        return div.innerHTML = infoVehiculo +
-          '<div class="empty"><div class="empty-icon">📋</div>Sin registros de servicio.</div>';
-      }
-
-      div.innerHTML = infoVehiculo + historial.map(h => `
-        <div class="historial-item">
-          <div class="tipo">${tipoServicioBadge(h.tipo_servicio)}</div>
-          <div class="desc">${h.descripcion || 'Sin descripción'}</div>
-          <div class="meta">
-            <span>📅 ${formatFecha(h.fecha_servicio)}</span>
-            ${h.kilometraje_servicio != null
-              ? `<span>🛣️ ${h.kilometraje_servicio.toLocaleString('es-AR')} km</span>`
-              : ''}
-            ${h.nombre_taller ? `<span>🔧 ${h.nombre_taller}</span>` : ''}
-          </div>
-        </div>`).join('');
-    } catch {
-      div.innerHTML = '<div class="alert alert-error">Error de conexión</div>';
+    if (!res.ok) return div.innerHTML = `<div class="alert alert-error">${data.error}</div>`;
+    const veh = data.vehiculo;
+    const filaVehiculo = `
+      <div style="margin-bottom:14px;padding:12px 16px;background:#eef0f5;border-radius:8px;font-size:0.9rem;">
+        <strong>ID ${veh.id} · ${veh.patente}</strong> &nbsp;|&nbsp;
+        ${veh.marca} ${veh.modelo} ${veh.anio} &nbsp;|&nbsp;
+        🛣️ ${veh.kilometraje} km
+      </div>`;
+    if (!data.historial || !data.historial.length) {
+      return div.innerHTML = filaVehiculo + '<div class="empty">No hay historial para este vehículo.</div>';
     }
+    div.innerHTML = filaVehiculo + data.historial.map(h => `
+      <div class="historial-item">
+        <div class="tipo">${h.tipo_servicio}</div>
+        <div class="desc">${h.descripcion || '-'}</div>
+        <div class="meta">📅 ${h.fecha_servicio} &nbsp;·&nbsp; 🛣️ ${h.kilometraje_servicio ? h.kilometraje_servicio + ' km' : 'N/A'} &nbsp;·&nbsp; 🔧 ${h.nombre_taller}</div>
+      </div>`).join('');
   }
 
-  // Agrega un nuevo registro de servicio al historial
   async function agregarHistorial() {
-    const btn  = document.getElementById('btn-agregar-hist');
     const body = {
-      vehiculo_id:          parseInt(document.getElementById('hist-vehiculo-id').value),
-      tipo_servicio:        document.getElementById('hist-tipo').value,
-      descripcion:          document.getElementById('hist-descripcion').value.trim(),
-      fecha_servicio:       document.getElementById('hist-fecha').value,
-      kilometraje_servicio: parseInt(document.getElementById('hist-kilometraje').value) || 0
+      vehiculo_id: parseInt(document.getElementById('hist-vehiculo-id').value),
+      tipo_servicio: document.getElementById('hist-tipo').value,
+      descripcion: document.getElementById('hist-descripcion').value,
+      fecha_servicio: document.getElementById('hist-fecha').value,
+      kilometraje_servicio: parseInt(document.getElementById('hist-kilometraje').value)
     };
-
-    if (!body.vehiculo_id || !body.tipo_servicio || !body.fecha_servicio) {
-      return showAlert('historial-alert', 'ID del vehículo, tipo y fecha son obligatorios', 'error');
-    }
-
-    setLoading(btn, true, 'Guardando...');
     try {
-      const res  = await fetch(`${API}/historial`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      const res = await fetch(`${API}/historial`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(body)
       });
       const data = await res.json();
       if (!res.ok) return showAlert('historial-alert', data.error, 'error');
-
       showAlert('historial-alert', 'Servicio registrado exitosamente', 'success');
       ['hist-vehiculo-id','hist-descripcion','hist-kilometraje'].forEach(id => document.getElementById(id).value = '');
-    } catch {
-      showAlert('historial-alert', 'Error de conexión', 'error');
-    } finally {
-      setLoading(btn, false);
-    }
+    } catch { showAlert('historial-alert', 'Error de conexión', 'error'); }
   }
 
-  /* ==========================================================
-     DEUDAS
-     ========================================================== */
-
-  // Consulta deudas de un vehículo por patente
-  async function verDeudas() {
-    const patente = document.getElementById('input-patente-deudas').value.toUpperCase().trim();
-    if (!patente) return;
-
-    const div = document.getElementById('resultado-deudas');
-    div.innerHTML = '<div class="empty">Consultando...</div>';
-
-    try {
-      // Primero buscamos el vehículo para obtener su ID
-      const vRes = await fetch(`${API}/vehiculos/patente/${patente}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (!vRes.ok) {
-        const err = await vRes.json();
-        return div.innerHTML = `<div class="alert alert-error">${err.error || 'Vehículo no encontrado'}</div>`;
-      }
-      const { vehiculo } = await vRes.json();
-
-      // Luego consultamos las deudas por el ID del vehículo
-      const res    = await fetch(`${API}/deudas/vehiculo/${vehiculo.id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const deudas = await res.json();
-
-      if (!Array.isArray(deudas) || !deudas.length) {
-        return div.innerHTML = `
-          <div class="vehiculo-info">
-            <div class="patente">${vehiculo.patente}</div>
-            <div class="details"><strong>${vehiculo.marca} ${vehiculo.modelo}</strong></div>
-          </div>
-          <div class="empty"><div class="empty-icon">✅</div>Sin deudas registradas.</div>`;
-      }
-
-      // Calcular deuda total pendiente
-      const totalPendiente = deudas
-        .filter(d => !d.pagado)
-        .reduce((sum, d) => sum + (d.monto || 0), 0);
-
-      div.innerHTML = `
-        <div class="vehiculo-info">
-          <div class="patente">${vehiculo.patente}</div>
-          <div class="details">
-            <strong>${vehiculo.marca} ${vehiculo.modelo}</strong><br>
-            Pendiente: <strong>$${totalPendiente.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</strong>
-          </div>
-        </div>
-        <table>
-          <thead><tr>
-            <th>Tipo</th><th>Descripción</th><th>Monto</th><th>Fecha</th><th>Estado</th>
-          </tr></thead>
-          <tbody>
-            ${deudas.map(d => `<tr>
-              <td><span class="badge badge-${d.tipo}">${d.tipo}</span></td>
-              <td>${d.descripcion || '-'}</td>
-              <td>$${(d.monto || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}</td>
-              <td>${formatFecha(d.fecha)}</td>
-              <td><span class="badge ${d.pagado ? 'badge-pagado' : 'badge-pendiente'}">
-                ${d.pagado ? 'Pagado' : 'Pendiente'}
-              </span></td>
-            </tr>`).join('')}
-          </tbody>
-        </table>`;
-    } catch {
-      div.innerHTML = '<div class="alert alert-error">Error de conexión</div>';
-    }
-  }
-
-  // Registra una nueva deuda para un vehículo
-  async function agregarDeuda() {
-    const btn  = document.getElementById('btn-agregar-deuda');
-    const body = {
-      vehiculo_id: parseInt(document.getElementById('deuda-vehiculo-id').value),
-      tipo:        document.getElementById('deuda-tipo').value,
-      descripcion: document.getElementById('deuda-descripcion').value.trim(),
-      monto:       parseFloat(document.getElementById('deuda-monto').value) || 0,
-      fecha:       document.getElementById('deuda-fecha').value
-    };
-
-    if (!body.vehiculo_id || !body.tipo || !body.fecha) {
-      return showAlert('deuda-alert', 'ID del vehículo, tipo y fecha son obligatorios', 'error');
-    }
-
-    setLoading(btn, true, 'Registrando...');
-    try {
-      const res  = await fetch(`${API}/deudas`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(body)
-      });
-      const data = await res.json();
-      if (!res.ok) return showAlert('deuda-alert', data.error, 'error');
-
-      showAlert('deuda-alert', 'Deuda registrada exitosamente', 'success');
-      ['deuda-vehiculo-id','deuda-descripcion','deuda-monto'].forEach(id => document.getElementById(id).value = '');
-    } catch {
-      showAlert('deuda-alert', 'Error de conexión', 'error');
-    } finally {
-      setLoading(btn, false);
-    }
-  }
-
-  /* ==========================================================
-     CAMBIAR CONTRASEÑA
-     ========================================================== */
+  // --- CAMBIO DE CONTRASEÑA ---
   async function cambiarPassword() {
-    const btn                   = document.getElementById('btn-cambiar-pw');
-    const passwordActual        = document.getElementById('cp-actual').value;
-    const passwordNueva         = document.getElementById('cp-nueva').value;
+    const passwordActual = document.getElementById('cp-actual').value;
+    const passwordNueva = document.getElementById('cp-nueva').value;
     const confirmarPasswordNueva = document.getElementById('cp-confirmar').value;
 
     if (!passwordActual || !passwordNueva || !confirmarPasswordNueva) {
       return showAlert('cambiar-password-alert', 'Todos los campos son obligatorios', 'error');
     }
     if (passwordNueva !== confirmarPasswordNueva) {
-      return showAlert('cambiar-password-alert', 'Las contraseñas no coinciden', 'error');
+      return showAlert('cambiar-password-alert', 'La nueva contraseña y la confirmación no coinciden', 'error');
     }
     if (passwordNueva.length < 6) {
       return showAlert('cambiar-password-alert', 'La contraseña debe tener al menos 6 caracteres', 'error');
     }
 
-    setLoading(btn, true, 'Actualizando...');
     try {
-      const res  = await fetch(`${API}/auth/cambiar-password`, {
+      const res = await fetch(`${API}/auth/cambiar-password`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ passwordActual, passwordNueva, confirmarPasswordNueva })
       });
       const data = await res.json();
       if (!res.ok) return showAlert('cambiar-password-alert', data.error, 'error');
-
       showAlert('cambiar-password-alert', 'Contraseña actualizada correctamente', 'success');
-      ['cp-actual','cp-nueva','cp-confirmar'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('cp-actual').value = '';
+      document.getElementById('cp-nueva').value = '';
+      document.getElementById('cp-confirmar').value = '';
     } catch {
       showAlert('cambiar-password-alert', 'Error de conexión con el servidor', 'error');
-    } finally {
-      setLoading(btn, false);
     }
   }
 
-  /* ==========================================================
-     HELPERS
-     ========================================================== */
-
-  // Muestra una alerta en el elemento con el id dado, y la
-  // elimina automáticamente después de 4.5 segundos.
-  function showAlert(id, msg, tipo) {
-    const el = document.getElementById(id);
-    el.innerHTML = `<div class="alert alert-${tipo}">${msg}</div>`;
-    setTimeout(() => { el.innerHTML = ''; }, 4500);
-  }
-
-  // Pone/saca el estado de carga en un botón (spinner + texto + disabled)
-  function setLoading(btn, loading, textoLoading) {
-    btn.disabled = loading;
-    if (loading) {
-      btn.dataset.original = btn.innerHTML;
-      btn.innerHTML = `<span class="spinner"></span>${textoLoading || 'Cargando...'}`;
-    } else {
-      btn.innerHTML = btn.dataset.original || btn.textContent;
-    }
-  }
-
-  // Devuelve el label en español de un tipo de servicio con su badge
-  function tipoServicioBadge(tipo) {
-    const clases  = { service: 'badge-service', reparacion: 'badge-reparacion', inspeccion: 'badge-inspeccion', siniestro: 'badge-siniestro' };
-    const labels  = { service: 'Service', reparacion: 'Reparación', inspeccion: 'Inspección', siniestro: 'Siniestro' };
-    return `<span class="badge ${clases[tipo] || 'badge-service'}">${labels[tipo] || tipo}</span>`;
-  }
-
-  // Formatea una fecha ISO a formato legible en español (Argentina)
-  function formatFecha(f) {
-    if (!f) return '-';
-    return new Date(f + 'T00:00:00').toLocaleDateString('es-AR', {
-      day: '2-digit', month: 'short', year: 'numeric'
-    });
-  }
-
-  // Traduce los valores internos de rol a texto para mostrar en el header
+  // --- HELPERS ---
   function formatRol(rol) {
-    return { dueno: 'Dueño', taller: 'Taller', admin: 'Administrador' }[rol] || rol;
+    const roles = { dueno: 'Dueño', taller: 'Taller', admin: 'Administrador' };
+    return roles[rol] || rol;
   }
 
-  /* ==========================================================
-     KEYBOARD: Enter en el formulario de login
-     ========================================================== */
+  function showAlert(id, msg, tipo) {
+    document.getElementById(id).innerHTML = `<div class="alert alert-${tipo}">${msg}</div>`;
+    setTimeout(() => document.getElementById(id).innerHTML = '', 4000);
+  }
+
   document.addEventListener('keydown', e => {
     if (e.key === 'Enter') {
       if (document.getElementById('form-login').style.display !== 'none') login();

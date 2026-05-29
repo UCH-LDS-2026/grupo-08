@@ -1,21 +1,8 @@
-/* ==========================================================
-   ARCHIVO: src/middlewares/authMiddleware.js
-   ROL: Middlewares de autenticación y autorización por rol.
-   EXPORTS:
-     - verificarToken    → valida el JWT del header Authorization
-     - verificarRoles()  → fábrica de middleware para restringir
-                           acceso por rol (dueno / taller / admin)
-   USADO EN: todas las rutas protegidas de src/routes/
-   ========================================================== */
-
 const jwt = require('jsonwebtoken');
 
-// ----------------------------------------------------------
-// verificarToken
-// Extrae y valida el token del header: "Authorization: Bearer <token>"
-// Si es válido adjunta el payload del JWT a req.usuario
-// ----------------------------------------------------------
 const verificarToken = (req, res, next) => {
+
+    // El token viene en el header Authorization: Bearer TOKEN
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
@@ -25,20 +12,14 @@ const verificarToken = (req, res, next) => {
 
     try {
         const verificado = jwt.verify(token, process.env.JWT_SECRET);
-        req.usuario = verificado; // { id, rol, iat, exp }
+        req.usuario = verificado;
         next();
     } catch (error) {
         res.status(401).json({ error: 'Token inválido' });
     }
 };
 
-// ----------------------------------------------------------
-// verificarRoles(rolesPermitidos)
-// Devuelve un middleware que verifica que req.usuario.rol
-// esté dentro del array de roles permitidos.
-// Ejemplo de uso en rutas:
-//   router.post('/', verificarToken, verificarRoles(['taller', 'admin']), handler)
-// ----------------------------------------------------------
+// Verifica que el usuario tenga uno de los roles permitidos
 const verificarRoles = (rolesPermitidos) => (req, res, next) => {
     if (!rolesPermitidos.includes(req.usuario.rol)) {
         return res.status(403).json({
