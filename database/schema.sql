@@ -50,7 +50,9 @@ CREATE TABLE IF NOT EXISTS vehiculos (
 -- Registra los servicios realizados sobre un vehículo.
 -- taller_id referencia al usuario con rol taller o admin
 -- que cargó el servicio.
--- tipo_servicio: service, reparacion, inspeccion, siniestro.
+-- tipo_servicio: los valores service, reparacion, inspeccion y siniestro
+-- son utilizados por el frontend, pero la columna no tiene restricción
+-- CHECK en la base de datos. Cualquier texto es válido a nivel SQL.
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS historial (
     id                   INTEGER  PRIMARY KEY AUTOINCREMENT,

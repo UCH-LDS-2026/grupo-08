@@ -180,7 +180,7 @@ usuarios (id, nombre, email, password, rol, creado_en)
     │            │
     │            └──1:N── deudas (id, vehiculo_id, tipo, descripcion, monto, pagado, fecha)
     │
-    └──1:1── talleres (id, usuario_id, nombre_taller, direccion, telefono, certificado)
+    └──1:N── talleres (id, usuario_id, nombre_taller, direccion, telefono, certificado)
 ```
 
 **Relaciones clave:**

@@ -260,7 +260,7 @@ usuarios 1:N vehiculos
 usuarios 1:N historial (como taller_id)
 vehiculos 1:N historial
 vehiculos 1:N deudas
-usuarios 1:1 talleres
+usuarios 1:N talleres
 ```
 
 ---
@@ -314,7 +314,7 @@ El diagrama Entidad-Relación del sistema se encuentra en:
 - Validación de formato de patente
 - Deploy en entorno productivo
 - Mejoras de seguridad y auditoría
-- Migración a base de datos relacional para producción
+- Migración a PostgreSQL para producción multiusuario
 
 ---
 
