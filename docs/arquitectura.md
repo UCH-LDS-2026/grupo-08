@@ -94,8 +94,7 @@ grupo-08/
 │
 ├── docs/
 │   ├── arquitectura.md        Este documento
-│   ├── diagrama-er.png        Diagrama Entidad-Relación
-│   ├── modelo-datos.md
+│   ├── modelo-datos.md        Modelo ER técnico (diagrama Mermaid)
 │   └── product-discovery.md
 │
 ├── trabajos-practicos/        Entregas de TPs
@@ -192,11 +191,11 @@ usuarios (id, nombre, email, password, rol, creado_en)
 
 ### Diagrama ER
 
-El diagrama Entidad-Relación del sistema se encuentra en:
+El modelo Entidad-Relación técnico se encuentra en:
 
-```
-docs/diagrama-er.png
-```
+[`docs/modelo-datos.md`](modelo-datos.md)
+
+Este es el modelo oficial porque está alineado directamente con el esquema definido en `database/schema.sql` y en `src/config/database.js`. Incluye un diagrama en formato Mermaid con las 5 tablas reales del sistema (`usuarios`, `vehiculos`, `historial`, `talleres`, `deudas`), sus columnas, tipos, restricciones y relaciones.
 
 ---
 
@@ -249,7 +248,7 @@ Este documento cubre los siguientes requerimientos del Trabajo Práctico 3:
 | Persistencia de datos | Este documento — sección "Base de datos" |
 | Estructura técnica del proyecto | Este documento — sección "Estructura de carpetas" |
 | Modelo de datos con relaciones | Este documento — sección "Modelo de datos" |
-| Diagrama ER | `docs/diagrama-er.png` |
+| Diagrama ER técnico | [`docs/modelo-datos.md`](modelo-datos.md) |
 | Schema SQL documentado | `database/schema.sql` |
 | Rutas API documentadas | Este documento — sección "Rutas API" + `README.md` |
 | Autenticación y roles | Este documento — sección "Autenticación y autorización" |

@@ -205,8 +205,7 @@ grupo-08/
 │
 ├── docs/
 │   ├── arquitectura.md          Arquitectura del sistema
-│   ├── diagrama-er.png          Diagrama Entidad-Relación
-│   ├── modelo-datos.md
+│   ├── modelo-datos.md          Modelo ER técnico (diagrama Mermaid)
 │   └── product-discovery.md
 │
 ├── trabajos-practicos/          Entregas de TPs
@@ -267,9 +266,11 @@ usuarios 1:N talleres
 
 ## Modelo ER
 
-El diagrama Entidad-Relación del sistema se encuentra en:
+El modelo Entidad-Relación técnico del sistema se encuentra documentado en:
 
-[`docs/diagrama-er.png`](docs/diagrama-er.png)
+[`docs/modelo-datos.md`](docs/modelo-datos.md)
+
+Este archivo contiene un diagrama ER en formato Mermaid basado en el esquema real definido en `database/schema.sql` y en `src/config/database.js`. Representa las tablas actuales del sistema: `usuarios`, `vehiculos`, `historial`, `talleres` y `deudas`.
 
 ---
 
