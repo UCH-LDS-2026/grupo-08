@@ -5,7 +5,22 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "test": "jest",
+    "test:coverage": "jest --coverage"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/tests/unit/**/*.test.js"
+    ],
+    "collectCoverageFrom": [
+      "src/controllers/**/*.js",
+      "!src/controllers/usuarioController.js",
+      "src/middlewares/**/*.js"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": ["text", "lcov", "html", "json-summary"]
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -16,6 +31,7 @@
     "jsonwebtoken": "^9.0.0"
   },
   "devDependencies": {
+    "jest": "^30.4.2",
     "nodemon": "^3.0.0"
   }
 }

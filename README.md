@@ -291,6 +291,30 @@ Este archivo contiene un diagrama ER en formato Mermaid basado en el esquema rea
 
 ---
 
+## Pruebas
+
+### Ejecutar tests unitarios
+
+```bash
+npm test                 # Corre los 49 tests unitarios
+npm run test:coverage    # Genera reporte de cobertura en coverage/
+```
+
+### Cobertura (módulos productivos activos)
+
+| Módulo | Statements | Branches | Functions | Lines |
+|---|---|---|---|---|
+| `authController.js` | 100 % | 100 % | 100 % | 100 % |
+| `historialController.js` | 100 % | 100 % | 100 % | 100 % |
+| `vehiculoController.js` | 100 % | 100 % | 100 % | 100 % |
+| `authMiddleware.js` | 100 % | 100 % | 100 % | 100 % |
+
+La cobertura corresponde al 100 % de los módulos productivos activos incluidos en el alcance unitario del TP4.
+El reporte HTML detallado está en `coverage/lcov-report/index.html`.
+Documentación completa: [`docs/tp4-testing.md`](docs/tp4-testing.md).
+
+---
+
 ## Estado actual del proyecto
 
 ### Funcionalidades implementadas
@@ -309,13 +333,14 @@ Este archivo contiene un diagrama ER en formato Mermaid basado en el esquema rea
 
 ### Pendiente o previsto a futuro
 
-- Tests automáticos (unitarios e integración)
+- Tests de integración (Supertest)
 - Módulo funcional de deudas (endpoints CRUD)
 - Módulo funcional de talleres (certificaciones, perfil)
 - Validación de formato de patente
 - Deploy en entorno productivo
 - Mejoras de seguridad y auditoría
 - Migración a PostgreSQL para producción multiusuario
+- Eliminar archivos heredados no activos (`usuarioController.js`, `routes/usuarios.js`, `routes/vehiculos.js`)
 
 ---
 

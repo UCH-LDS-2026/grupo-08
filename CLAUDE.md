@@ -156,9 +156,26 @@ dist/ / build/
 - Frontend rediseñado: sidebar, cards de vehículos, timeline, tarjeta de identidad
 - Frontend separado: `public/index.html` + `public/css/styles.css` + `public/js/app.js`
 - Documentación TP3: README, arquitectura, schema.sql, diagrama ER Mermaid
+- TP4: 49 tests unitarios con Jest · 100 % cobertura en módulos productivos activos
+  - `tests/unit/authMiddleware.test.js` (7 tests)
+  - `tests/unit/authController.test.js` (18 tests)
+  - `tests/unit/vehiculoController.test.js` (11 tests)
+  - `tests/unit/historialController.test.js` (13 tests)
+
+### Testing
+- Framework: Jest ^30.4.2 · entorno: Node
+- Ejecutar: `npm test` / `npm run test:coverage`
+- Alcance: controladores y middleware activos (excluye `usuarioController.js`, no montado)
+- Ver `docs/tp4-testing.md` para detalles completos
+
+### Archivos heredados (no activos — pendientes de eliminación)
+- `src/controllers/usuarioController.js`: implementación de auth alternativa, no registrada en `src/index.js`
+- `src/routes/usuarios.js`: rutas para el controlador anterior, no montadas
+- `src/routes/vehiculos.js`: referencia a funciones inexistentes en `vehiculoController.js`, no montadas
 
 ### Pendiente / Futuro
-- Tests automáticos (Jest + Supertest)
+- Eliminar archivos heredados no activos (PR separado)
+- Tests de integración (Supertest)
 - Módulo de deudas con endpoints CRUD
 - Módulo de talleres con endpoints CRUD
 - Migración a PostgreSQL para producción
