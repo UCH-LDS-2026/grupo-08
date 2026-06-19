@@ -242,7 +242,7 @@ async function verHistorial() {
   const url = /^\d+$/.test(valor)
     ? `${API}/historial/vehiculo/${valor}`
     : `${API}/historial/patente/${valor.toUpperCase()}`;
-  const res  = await fetch(url);
+  const res  = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
   const data = await res.json();
   const div  = document.getElementById('resultado-historial');
   if (!res.ok) {
