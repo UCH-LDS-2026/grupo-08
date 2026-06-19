@@ -7,29 +7,29 @@ const db = new Database(path.join(__dirname, '../../historycar.db'));
 db.pragma('foreign_keys = OFF');
 
 // ────────────────────────────────────────────────────────────
-// Detección y migración de esquema anterior
+// Detección de esquema anterior (NO borra datos automáticamente)
 // ────────────────────────────────────────────────────────────
 try {
     const usuariosSchema = db.prepare(
         "SELECT sql FROM sqlite_master WHERE type='table' AND name='usuarios'"
     ).get();
 
-    // Si el CHECK incluye 'taller' → esquema anterior al refactor
-    const necesitaMigracion = usuariosSchema && (
+    // Si el CHECK incluye 'taller' → esquema previo al refactor rol mecanico
+    const esquemaDesactualizado = usuariosSchema && (
         usuariosSchema.sql.includes("'taller'") ||
         usuariosSchema.sql.includes('"taller"')
     );
 
-    if (necesitaMigracion) {
-        console.log('Esquema anterior detectado. Aplicando migración automática...');
-        db.exec(`
-            DROP TABLE IF EXISTS historial;
-            DROP TABLE IF EXISTS deudas;
-            DROP TABLE IF EXISTS talleres;
-            DROP TABLE IF EXISTS vehiculos;
-            DROP TABLE IF EXISTS usuarios;
-        `);
-        console.log('Migración completada. Ejecutá npm run reset:demo para crear los datos demo.');
+    if (esquemaDesactualizado) {
+        console.error('');
+        console.error('❌  Esquema de base de datos desactualizado.');
+        console.error('    La base local fue creada con una versión anterior del proyecto.');
+        console.error('    Para migrar y crear datos demo ejecutá:');
+        console.error('');
+        console.error('        npm run reset:demo');
+        console.error('');
+        db.close();
+        process.exit(1);
     }
 } catch (_) {
     // Tablas aún no existen — se crean a continuación
