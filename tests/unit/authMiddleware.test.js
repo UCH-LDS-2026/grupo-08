@@ -8,11 +8,8 @@ describe('authMiddleware', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    req = { headers: {} };
-    res = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn()
-    };
+    req  = { headers: {} };
+    res  = { status: jest.fn().mockReturnThis(), json: jest.fn() };
     next = jest.fn();
   });
 
@@ -27,11 +24,25 @@ describe('authMiddleware', () => {
       expect(next).not.toHaveBeenCalled();
     });
 
-    it('retorna 401 si el header está pero no tiene Bearer token', () => {
-      req.headers['authorization'] = 'SinBearer';
+    it('retorna 401 si el header no empieza con "Bearer "', () => {
+      req.headers['authorization'] = 'SoloToken';
+      verificarToken(req, res, next);
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it('retorna 401 con esquema Basic (no Bearer)', () => {
+      req.headers['authorization'] = 'Basic dXNlcjpwYXNz';
       verificarToken(req, res, next);
       expect(res.status).toHaveBeenCalledWith(401);
       expect(res.json).toHaveBeenCalledWith({ error: 'Acceso denegado, token requerido' });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it('retorna 401 si el header es "Bearer" sin token', () => {
+      req.headers['authorization'] = 'Bearer ';
+      verificarToken(req, res, next);
+      expect(res.status).toHaveBeenCalledWith(401);
       expect(next).not.toHaveBeenCalled();
     });
 
@@ -59,18 +70,16 @@ describe('authMiddleware', () => {
   // verificarRoles
   // ─────────────────────────────────────────────
   describe('verificarRoles', () => {
-    beforeEach(() => {
-      req.usuario = { id: 1, rol: 'dueno' };
-    });
+    beforeEach(() => { req.usuario = { id: 1, rol: 'dueno' }; });
 
-    it('llama a next() si el rol del usuario está en la lista permitida', () => {
+    it('llama a next() si el rol está en la lista permitida', () => {
       const middleware = verificarRoles(['dueno', 'admin']);
       middleware(req, res, next);
       expect(next).toHaveBeenCalledTimes(1);
       expect(res.status).not.toHaveBeenCalled();
     });
 
-    it('retorna 403 si el rol no está en la lista permitida', () => {
+    it('retorna 403 si el rol no está permitido', () => {
       req.usuario.rol = 'taller';
       const middleware = verificarRoles(['dueno', 'admin']);
       middleware(req, res, next);
