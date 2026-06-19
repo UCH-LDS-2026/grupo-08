@@ -175,16 +175,34 @@
           Cambiar contraseña
         </div>
 
+        <!-- Visible solo para mecanico/admin — controlado por JS -->
+        <div id="tab-registrar-servicio" class="nav-tab" data-panel="registrar-servicio" onclick="switchPanel('registrar-servicio')" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+          </svg>
+          Registrar servicio
+        </div>
+
         <!-- Visible solo para admin — controlado por JS -->
         <div id="tab-admin-usuarios" class="nav-tab" data-panel="admin-usuarios"
-             onclick="switchPanel('admin-usuarios'); cargarTalleresPendientes()" style="display:none;">
+             onclick="switchPanel('admin-usuarios'); cargarTalleresSelector()" style="display:none;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
             <circle cx="9" cy="7" r="4"/>
             <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
             <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
           </svg>
-          Usuarios y talleres
+          Usuarios
+        </div>
+
+        <!-- Visible solo para admin — controlado por JS -->
+        <div id="tab-admin-talleres" class="nav-tab" data-panel="admin-talleres"
+             onclick="switchPanel('admin-talleres'); cargarListaTalleres()" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+          </svg>
+          Talleres
         </div>
 
       </nav>
@@ -254,41 +272,6 @@
           </div>
 
           <div id="resultado-historial"></div>
-
-          <!-- Formulario de carga — visible solo para taller/admin -->
-          <div id="card-agregar-historial" class="historial-form-card">
-            <h3>Registrar servicio</h3>
-            <p class="historial-form-subtitle">Cargá un nuevo servicio al historial del vehículo.</p>
-            <div id="historial-alert"></div>
-            <div class="grid-2">
-              <div class="form-group">
-                <label>ID del vehículo</label>
-                <input type="number" id="hist-vehiculo-id" placeholder="1" />
-              </div>
-              <div class="form-group">
-                <label>Tipo de servicio</label>
-                <select id="hist-tipo">
-                  <option value="service">Service</option>
-                  <option value="reparacion">Reparación</option>
-                  <option value="inspeccion">Inspección</option>
-                  <option value="siniestro">Siniestro</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Fecha</label>
-                <input type="date" id="hist-fecha" />
-              </div>
-              <div class="form-group">
-                <label>Kilometraje</label>
-                <input type="number" id="hist-kilometraje" placeholder="50000" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Descripción del servicio</label>
-              <input type="text" id="hist-descripcion" placeholder="Ej: Cambio de aceite y filtros" />
-            </div>
-            <button class="btn" onclick="agregarHistorial()">Guardar servicio</button>
-          </div>
         </div>
 
         <!-- Panel: Cambiar contraseña -->
@@ -328,21 +311,14 @@
           </div>
         </div>
 
-        <!-- Panel: Usuarios y talleres (solo admin) -->
+        <!-- Panel: Usuarios (solo admin) -->
         <div id="panel-admin-usuarios" class="panel">
-          <p class="section-title">Usuarios y talleres</p>
+          <p class="section-title">Usuarios</p>
           <p class="section-subtitle">
-            Creá usuarios, registrá perfiles de taller y gestioná certificaciones.
-            Todos los datos se guardan en la base de datos local. Las contraseñas se hashean con bcrypt.
+            Creá cuentas internas. Roles disponibles: dueño, mecánico, administrador.
+            Las contraseñas se hashean con bcrypt. Credenciales persistidas en <code>historycar.db</code>.
           </p>
-
-          <!-- ── Crear usuario ── -->
           <div class="card">
-            <h3 style="margin:0 0 4px;">Crear usuario</h3>
-            <p style="font-size:0.82rem;color:var(--text-muted,#888);margin:0 0 16px;">
-              Los datos se guardan en la tabla <code>usuarios</code> de <code>historycar.db</code>.
-              La contraseña se guarda hasheada — nunca en texto plano.
-            </p>
             <div id="admin-usuarios-alert"></div>
             <div class="grid-2">
               <div class="form-group">
@@ -361,49 +337,106 @@
                 <label>Rol</label>
                 <select id="admin-rol" onchange="onRolAdminChange()">
                   <option value="dueno">Dueño de vehículo</option>
-                  <option value="taller">Taller mecánico</option>
+                  <option value="mecanico">Mecánico</option>
                   <option value="admin">Administrador</option>
                 </select>
               </div>
             </div>
 
-            <!-- Campos adicionales de perfil de taller (visible solo cuando rol = taller) -->
+            <!-- Selector de taller — visible solo cuando rol = mecanico -->
             <div id="taller-profile-fields" style="display:none;border-top:1px solid var(--border,#e5e7eb);margin-top:16px;padding-top:16px;">
-              <p style="font-size:0.85rem;font-weight:600;margin:0 0 12px;">Perfil de taller <span style="font-weight:400;color:#c00;">— obligatorio para usuarios con rol taller</span></p>
-              <div class="grid-2">
-                <div class="form-group">
-                  <label>Nombre del taller</label>
-                  <input type="text" id="admin-nombre-taller" placeholder="Taller Norte SRL" />
-                </div>
-                <div class="form-group">
-                  <label>Dirección</label>
-                  <input type="text" id="admin-direccion" placeholder="Av. Siempre Viva 742" />
-                </div>
-                <div class="form-group">
-                  <label>Teléfono</label>
-                  <input type="text" id="admin-telefono" placeholder="2610000000" />
-                </div>
-                <div class="form-group" style="display:flex;align-items:center;gap:10px;padding-top:22px;">
-                  <input type="checkbox" id="admin-certificado" style="width:16px;height:16px;" />
-                  <label for="admin-certificado" style="margin:0;cursor:pointer;">Certificar taller inmediatamente</label>
-                </div>
+              <p style="font-size:0.85rem;font-weight:600;margin:0 0 12px;">
+                Taller asociado <span style="font-weight:400;color:#c00;">— obligatorio para usuarios mecánicos</span>
+              </p>
+              <div class="form-group">
+                <label>Taller</label>
+                <select id="admin-taller-id">
+                  <option value="">— Seleccioná un taller —</option>
+                </select>
+              </div>
+              <p style="font-size:0.78rem;color:#888;margin:4px 0 0;">
+                Si no hay talleres disponibles, creá uno primero en la pestaña <strong>Talleres</strong>.
+              </p>
+            </div>
+
+            <button class="btn btn-success" onclick="crearUsuarioAdmin()" style="margin-top:16px;">Crear usuario</button>
+          </div>
+        </div>
+
+        <!-- Panel: Talleres (solo admin) -->
+        <div id="panel-admin-talleres" class="panel">
+          <p class="section-title">Talleres</p>
+          <p class="section-subtitle">Creá y gestioná los talleres mecánicos. Los mecánicos deben estar asociados a un taller.</p>
+
+          <!-- Crear taller -->
+          <div class="card">
+            <h3 style="margin:0 0 14px;">Crear taller</h3>
+            <div id="admin-taller-crear-alert"></div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Nombre del taller <span style="color:#c00;">*</span></label>
+                <input type="text" id="taller-nombre" placeholder="Taller Norte SRL" />
+              </div>
+              <div class="form-group">
+                <label>Dirección <span style="color:#c00;">*</span></label>
+                <input type="text" id="taller-direccion" placeholder="Av. Siempre Viva 742" />
+              </div>
+              <div class="form-group">
+                <label>Teléfono</label>
+                <input type="text" id="taller-telefono" placeholder="2610000000" />
+              </div>
+              <div class="form-group" style="display:flex;align-items:center;gap:10px;padding-top:22px;">
+                <input type="checkbox" id="taller-certificado" checked style="width:16px;height:16px;" />
+                <label for="taller-certificado" style="margin:0;cursor:pointer;">Certificado</label>
               </div>
             </div>
-
-            <button class="btn btn-success" onclick="crearUsuarioAdmin()">Crear usuario</button>
+            <button class="btn btn-success" onclick="crearTaller()">Crear taller</button>
           </div>
 
-          <!-- ── Gestión de talleres pendientes ── -->
+          <!-- Lista de talleres -->
           <div class="card" style="margin-top:24px;">
-            <h3 style="margin:0 0 4px;">Talleres pendientes de certificación</h3>
-            <p style="font-size:0.82rem;color:var(--text-muted,#888);margin:0 0 14px;">
-              Talleres con perfil creado que aún no fueron certificados.
-            </p>
-            <div id="admin-talleres-alert"></div>
-            <button class="btn" onclick="cargarTalleresPendientes()" style="margin-bottom:14px;">Actualizar lista</button>
-            <div id="lista-talleres-pendientes">
-              <div class="empty">Hacé clic en "Actualizar lista" para ver los talleres pendientes.</div>
+            <h3 style="margin:0 0 4px;">Talleres registrados</h3>
+            <button class="btn" onclick="cargarListaTalleres()" style="margin:10px 0 14px;">Actualizar lista</button>
+            <div id="lista-talleres-admin">
+              <div class="empty">Hacé clic en "Actualizar lista" para ver los talleres.</div>
             </div>
+          </div>
+        </div>
+
+        <!-- Panel: Registrar servicio (mecánico / admin) -->
+        <div id="panel-registrar-servicio" class="panel">
+          <p class="section-title">Registrar servicio</p>
+          <p class="section-subtitle">Ingresá la patente del vehículo para registrar un nuevo servicio. No necesitás conocer el ID interno.</p>
+          <div class="card">
+            <div id="servicio-alert"></div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Patente del vehículo</label>
+                <input type="text" id="serv-patente" placeholder="ABC123" style="text-transform:uppercase;" />
+              </div>
+              <div class="form-group">
+                <label>Tipo de servicio</label>
+                <select id="serv-tipo">
+                  <option value="service">Service</option>
+                  <option value="reparacion">Reparación</option>
+                  <option value="inspeccion">Inspección</option>
+                  <option value="siniestro">Siniestro</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Fecha</label>
+                <input type="date" id="serv-fecha" />
+              </div>
+              <div class="form-group">
+                <label>Kilometraje</label>
+                <input type="number" id="serv-kilometraje" placeholder="50000" min="0" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Descripción del servicio</label>
+              <input type="text" id="serv-descripcion" placeholder="Ej: Cambio de aceite y filtros" />
+            </div>
+            <button class="btn btn-success" onclick="registrarServicio()">Guardar servicio</button>
           </div>
         </div>
 
