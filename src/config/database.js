@@ -4,6 +4,9 @@ const path = require('path');
 // Crea el archivo historycar.db en la raíz del proyecto
 const db = new Database(path.join(__dirname, '../../historycar.db'));
 
+// Activar integridad referencial (desactivada por defecto en SQLite)
+db.pragma('foreign_keys = ON');
+
 // Crear las tablas si no existen
 db.exec(`
     CREATE TABLE IF NOT EXISTS usuarios (

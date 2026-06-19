@@ -7,7 +7,9 @@
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "test": "jest",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "create:admin": "node scripts/createAdmin.js",
+    "reset:demo": "node scripts/resetDemoData.js"
   },
   "jest": {
     "testEnvironment": "node",
@@ -16,8 +18,8 @@
     ],
     "collectCoverageFrom": [
       "src/controllers/**/*.js",
-      "!src/controllers/usuarioController.js",
-      "src/middlewares/**/*.js"
+      "src/middlewares/**/*.js",
+      "src/utils/**/*.js"
     ],
     "coverageDirectory": "coverage",
     "coverageReporters": ["text", "lcov", "html", "json-summary"]

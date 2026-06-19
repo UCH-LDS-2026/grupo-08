@@ -83,14 +83,9 @@
             <label>Contraseña</label>
             <input type="password" id="reg-password" placeholder="••••••" />
           </div>
-          <div class="form-group">
-            <label>Tipo de cuenta</label>
-            <select id="reg-rol">
-              <option value="dueno">Dueño de vehículo</option>
-              <option value="taller">Taller mecánico</option>
-              <option value="admin">Administrador</option>
-            </select>
-          </div>
+          <p style="font-size:0.82rem;color:var(--text-muted,#888);margin:0 0 12px;">
+            El registro público crea una cuenta de dueño de vehículo.
+          </p>
           <button class="btn" onclick="registro()">Crear cuenta</button>
         </div>
 
@@ -178,6 +173,18 @@
             <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
           </svg>
           Cambiar contraseña
+        </div>
+
+        <!-- Visible solo para admin — controlado por JS -->
+        <div id="tab-admin-usuarios" class="nav-tab" data-panel="admin-usuarios"
+             onclick="switchPanel('admin-usuarios'); cargarTalleresPendientes()" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          Usuarios y talleres
         </div>
 
       </nav>
@@ -318,6 +325,85 @@
             </div>
 
             <button class="btn" onclick="cambiarPassword()">Actualizar contraseña</button>
+          </div>
+        </div>
+
+        <!-- Panel: Usuarios y talleres (solo admin) -->
+        <div id="panel-admin-usuarios" class="panel">
+          <p class="section-title">Usuarios y talleres</p>
+          <p class="section-subtitle">
+            Creá usuarios, registrá perfiles de taller y gestioná certificaciones.
+            Todos los datos se guardan en la base de datos local. Las contraseñas se hashean con bcrypt.
+          </p>
+
+          <!-- ── Crear usuario ── -->
+          <div class="card">
+            <h3 style="margin:0 0 4px;">Crear usuario</h3>
+            <p style="font-size:0.82rem;color:var(--text-muted,#888);margin:0 0 16px;">
+              Los datos se guardan en la tabla <code>usuarios</code> de <code>historycar.db</code>.
+              La contraseña se guarda hasheada — nunca en texto plano.
+            </p>
+            <div id="admin-usuarios-alert"></div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Nombre completo</label>
+                <input type="text" id="admin-nombre" placeholder="Juan Pérez" />
+              </div>
+              <div class="form-group">
+                <label>Correo electrónico</label>
+                <input type="email" id="admin-email" placeholder="juan@ejemplo.com" />
+              </div>
+              <div class="form-group">
+                <label>Contraseña <span style="font-size:0.8rem;color:#888;">(mín. 6 caracteres)</span></label>
+                <input type="password" id="admin-password" placeholder="••••••" />
+              </div>
+              <div class="form-group">
+                <label>Rol</label>
+                <select id="admin-rol" onchange="onRolAdminChange()">
+                  <option value="dueno">Dueño de vehículo</option>
+                  <option value="taller">Taller mecánico</option>
+                  <option value="admin">Administrador</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Campos adicionales de perfil de taller (visible solo cuando rol = taller) -->
+            <div id="taller-profile-fields" style="display:none;border-top:1px solid var(--border,#e5e7eb);margin-top:16px;padding-top:16px;">
+              <p style="font-size:0.85rem;font-weight:600;margin:0 0 12px;">Perfil de taller <span style="font-weight:400;color:#c00;">— obligatorio para usuarios con rol taller</span></p>
+              <div class="grid-2">
+                <div class="form-group">
+                  <label>Nombre del taller</label>
+                  <input type="text" id="admin-nombre-taller" placeholder="Taller Norte SRL" />
+                </div>
+                <div class="form-group">
+                  <label>Dirección</label>
+                  <input type="text" id="admin-direccion" placeholder="Av. Siempre Viva 742" />
+                </div>
+                <div class="form-group">
+                  <label>Teléfono</label>
+                  <input type="text" id="admin-telefono" placeholder="2610000000" />
+                </div>
+                <div class="form-group" style="display:flex;align-items:center;gap:10px;padding-top:22px;">
+                  <input type="checkbox" id="admin-certificado" style="width:16px;height:16px;" />
+                  <label for="admin-certificado" style="margin:0;cursor:pointer;">Certificar taller inmediatamente</label>
+                </div>
+              </div>
+            </div>
+
+            <button class="btn btn-success" onclick="crearUsuarioAdmin()">Crear usuario</button>
+          </div>
+
+          <!-- ── Gestión de talleres pendientes ── -->
+          <div class="card" style="margin-top:24px;">
+            <h3 style="margin:0 0 4px;">Talleres pendientes de certificación</h3>
+            <p style="font-size:0.82rem;color:var(--text-muted,#888);margin:0 0 14px;">
+              Talleres con perfil creado que aún no fueron certificados.
+            </p>
+            <div id="admin-talleres-alert"></div>
+            <button class="btn" onclick="cargarTalleresPendientes()" style="margin-bottom:14px;">Actualizar lista</button>
+            <div id="lista-talleres-pendientes">
+              <div class="empty">Hacé clic en "Actualizar lista" para ver los talleres pendientes.</div>
+            </div>
           </div>
         </div>
 

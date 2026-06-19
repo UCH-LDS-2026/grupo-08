@@ -2,9 +2,14 @@ const jwt = require('jsonwebtoken');
 
 const verificarToken = (req, res, next) => {
 
-    // El token viene en el header Authorization: Bearer TOKEN
+    // El token debe venir en el header Authorization: Bearer TOKEN
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Acceso denegado, token requerido' });
+    }
+
+    const token = authHeader.slice(7).trim();
 
     if (!token) {
         return res.status(401).json({ error: 'Acceso denegado, token requerido' });

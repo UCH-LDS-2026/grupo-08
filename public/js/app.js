@@ -4,25 +4,35 @@ let usuarioActual = JSON.parse(localStorage.getItem('usuario') || 'null');
 
 if (token && usuarioActual) mostrarDashboard();
 
+// --- ESCAPE HTML (prevención de XSS) ---
+function escapeHTML(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
 // --- AUTH ---
 function switchAuth(modo) {
   document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', (modo === 'login' && i === 0) || (modo === 'registro' && i === 1)));
   document.getElementById('form-login').style.display = modo === 'login' ? 'block' : 'none';
   document.getElementById('form-registro').style.display = modo === 'registro' ? 'block' : 'none';
-  document.getElementById('auth-alert').innerHTML = '';
+  document.getElementById('auth-alert').textContent = '';
 }
 
 async function login() {
-  const email = document.getElementById('login-email').value;
+  const email    = document.getElementById('login-email').value;
   const password = document.getElementById('login-password').value;
   try {
-    const res = await fetch(`${API}/auth/login`, {
+    const res  = await fetch(`${API}/auth/login`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     });
     const data = await res.json();
     if (!res.ok) return showAlert('auth-alert', data.error, 'error');
-    token = data.token;
+    token         = data.token;
     usuarioActual = data.usuario;
     localStorage.setItem('token', token);
     localStorage.setItem('usuario', JSON.stringify(usuarioActual));
@@ -31,14 +41,14 @@ async function login() {
 }
 
 async function registro() {
-  const nombre = document.getElementById('reg-nombre').value;
-  const email = document.getElementById('reg-email').value;
+  const nombre   = document.getElementById('reg-nombre').value;
+  const email    = document.getElementById('reg-email').value;
   const password = document.getElementById('reg-password').value;
-  const rol = document.getElementById('reg-rol').value;
+  // El registro público siempre crea un dueño; el rol no se envía
   try {
-    const res = await fetch(`${API}/auth/registro`, {
+    const res  = await fetch(`${API}/auth/registro`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nombre, email, password, rol })
+      body: JSON.stringify({ nombre, email, password })
     });
     const data = await res.json();
     if (!res.ok) return showAlert('auth-alert', data.error, 'error');
@@ -51,17 +61,17 @@ function logout() {
   token = null; usuarioActual = null;
   localStorage.removeItem('token');
   localStorage.removeItem('usuario');
-  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('dashboard').style.display    = 'none';
   document.getElementById('auth-section').style.display = 'block';
-  document.getElementById('btn-logout').style.display = 'none';
-  document.getElementById('user-info').style.display = 'none';
+  document.getElementById('btn-logout').style.display   = 'none';
+  document.getElementById('user-info').style.display    = 'none';
 }
 
 function mostrarDashboard() {
   document.getElementById('auth-section').style.display = 'none';
-  document.getElementById('dashboard').style.display = 'block';
-  document.getElementById('btn-logout').style.display = 'inline-block';
-  document.getElementById('user-info').style.display = 'inline';
+  document.getElementById('dashboard').style.display    = 'block';
+  document.getElementById('btn-logout').style.display   = 'inline-block';
+  document.getElementById('user-info').style.display    = 'inline';
   document.getElementById('user-info').textContent = `${usuarioActual.nombre} · ${formatRol(usuarioActual.rol)}`;
 
   // Mostrar "Agregar Vehículo" solo para dueño o admin
@@ -71,6 +81,10 @@ function mostrarDashboard() {
   // Mostrar "Agregar servicio al historial" solo para taller o admin
   const puedeCargarHistorial = ['taller', 'admin'].includes(usuarioActual.rol);
   document.getElementById('card-agregar-historial').style.display = puedeCargarHistorial ? '' : 'none';
+
+  // Mostrar pestaña "Crear usuarios" solo para admin
+  const tabAdmin = document.getElementById('tab-admin-usuarios');
+  if (tabAdmin) tabAdmin.style.display = usuarioActual.rol === 'admin' ? '' : 'none';
 
   cargarMisVehiculos();
   document.getElementById('hist-fecha').valueAsDate = new Date();
@@ -89,10 +103,8 @@ function switchPanel(id) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById(`panel-${id}`).classList.add('active');
-  // data-panel evita depender de event.target que puede apuntar a SVG u otro hijo
   const navItem = document.querySelector(`.nav-tab[data-panel="${id}"]`);
   if (navItem) navItem.classList.add('active');
-  // En mobile cerrar sidebar al navegar
   const sidebar = document.getElementById('sidebar');
   const overlay = document.getElementById('sidebar-overlay');
   if (sidebar) sidebar.classList.remove('open');
@@ -109,26 +121,31 @@ function toggleSidebar() {
 
 // --- VEHÍCULOS ---
 async function cargarMisVehiculos() {
-  const res = await fetch(`${API}/vehiculos/mis-vehiculos`, { headers: { Authorization: `Bearer ${token}` } });
+  const res  = await fetch(`${API}/vehiculos/mis-vehiculos`, { headers: { Authorization: `Bearer ${token}` } });
   const data = await res.json();
   const lista = document.getElementById('lista-vehiculos');
   if (!data.vehiculos || !data.vehiculos.length) {
-    return lista.innerHTML = '<div class="empty">No tenés vehículos registrados aún.</div>';
+    lista.textContent = '';
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.textContent = 'No tenés vehículos registrados aún.';
+    lista.appendChild(empty);
+    return;
   }
   lista.innerHTML = `
     <div class="vehicles-grid">
       ${data.vehiculos.map(v => `
         <div class="vehicle-card">
           <div class="vehicle-card-header">
-            <span class="vehicle-plate">${v.patente}</span>
-            <span class="vehicle-id-badge">ID #${v.id}</span>
+            <span class="vehicle-plate">${escapeHTML(v.patente)}</span>
+            <span class="vehicle-id-badge">ID #${escapeHTML(v.id)}</span>
           </div>
           <div class="vehicle-card-body">
-            <div class="vehicle-model">${v.marca} ${v.modelo}</div>
+            <div class="vehicle-model">${escapeHTML(v.marca)} ${escapeHTML(v.modelo)}</div>
             <div class="vehicle-meta">
               <span class="vehicle-meta-item">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                ${v.anio || '—'}
+                ${escapeHTML(v.anio ?? '—')}
               </span>
               <span class="vehicle-meta-item">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
@@ -143,20 +160,20 @@ async function cargarMisVehiculos() {
 
 async function agregarVehiculo() {
   const body = {
-    patente: document.getElementById('veh-patente').value.trim().toUpperCase(),
-    marca: document.getElementById('veh-marca').value,
-    modelo: document.getElementById('veh-modelo').value,
-    anio: parseInt(document.getElementById('veh-anio').value),
+    patente:     document.getElementById('veh-patente').value.trim().toUpperCase(),
+    marca:       document.getElementById('veh-marca').value,
+    modelo:      document.getElementById('veh-modelo').value,
+    anio:        parseInt(document.getElementById('veh-anio').value),
     kilometraje: parseInt(document.getElementById('veh-kilometraje').value) || 0
   };
   try {
-    const res = await fetch(`${API}/vehiculos`, {
+    const res  = await fetch(`${API}/vehiculos`, {
       method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(body)
     });
     const data = await res.json();
     if (!res.ok) return showAlert('vehiculo-alert', data.error, 'error');
-    showAlert('vehiculo-alert', `Vehículo ${body.patente} registrado exitosamente`, 'success');
+    showAlert('vehiculo-alert', `Vehículo ${escapeHTML(body.patente)} registrado exitosamente`, 'success');
     ['veh-patente','veh-marca','veh-modelo','veh-anio','veh-kilometraje'].forEach(id => document.getElementById(id).value = '');
     cargarMisVehiculos();
   } catch { showAlert('vehiculo-alert', 'Error de conexión', 'error'); }
@@ -165,28 +182,36 @@ async function agregarVehiculo() {
 async function buscarPatente() {
   const patente = document.getElementById('input-patente').value.toUpperCase().trim();
   if (!patente) return;
-  const res = await fetch(`${API}/vehiculos/patente/${patente}`, { headers: { Authorization: `Bearer ${token}` } });
+  const res  = await fetch(`${API}/vehiculos/patente/${patente}`, { headers: { Authorization: `Bearer ${token}` } });
   const data = await res.json();
-  const div = document.getElementById('resultado-busqueda');
-  if (!res.ok) return div.innerHTML = `<div class="alert alert-error">${data.error}</div>`;
+  const div  = document.getElementById('resultado-busqueda');
+  if (!res.ok) {
+    div.textContent = '';
+    const err = document.createElement('div');
+    err.className = 'alert alert-error';
+    err.textContent = data.error;
+    div.appendChild(err);
+    return;
+  }
   const v = data.vehiculo;
-  const ownerNombre  = v.dueno_nombre  || '—';
-  const ownerEmail   = v.dueno_email   || '—';
-  const ownerInitial = v.dueno_nombre  ? v.dueno_nombre.charAt(0).toUpperCase() : '?';
+  // dueno_nombre y dueno_email pueden ser null según permisos del caller
+  const ownerNombre  = v.dueno_nombre  != null ? escapeHTML(v.dueno_nombre) : 'Información reservada';
+  const ownerEmail   = v.dueno_email   != null ? escapeHTML(v.dueno_email)  : 'Correo reservado';
+  const ownerInitial = v.dueno_nombre  != null ? escapeHTML(v.dueno_nombre.charAt(0).toUpperCase()) : '?';
   const km = v.kilometraje !== undefined ? Number(v.kilometraje).toLocaleString('es-AR') + ' km' : '—';
   div.innerHTML = `
     <div class="vehicle-identity-card">
       <div class="vic-header">
         <div>
-          <div class="vic-plate-large">${v.patente}</div>
-          <div class="vic-subtitle">${v.marca} ${v.modelo}${v.anio ? ' · ' + v.anio : ''}</div>
+          <div class="vic-plate-large">${escapeHTML(v.patente)}</div>
+          <div class="vic-subtitle">${escapeHTML(v.marca)} ${escapeHTML(v.modelo)}${v.anio ? ' · ' + escapeHTML(v.anio) : ''}</div>
         </div>
-        <span class="vic-id-chip">ID #${v.id}</span>
+        <span class="vic-id-chip">ID #${escapeHTML(v.id)}</span>
       </div>
       <div class="vic-specs">
-        ${v.vin ? `<div class="vic-spec"><span class="vic-spec-label">VIN</span><span class="vic-spec-value">${v.vin}</span></div>` : ''}
-        <div class="vic-spec"><span class="vic-spec-label">Patente</span><span class="vic-spec-value">${v.patente}</span></div>
-        <div class="vic-spec"><span class="vic-spec-label">Año</span><span class="vic-spec-value">${v.anio || '—'}</span></div>
+        ${v.vin ? `<div class="vic-spec"><span class="vic-spec-label">VIN</span><span class="vic-spec-value">${escapeHTML(v.vin)}</span></div>` : ''}
+        <div class="vic-spec"><span class="vic-spec-label">Patente</span><span class="vic-spec-value">${escapeHTML(v.patente)}</span></div>
+        <div class="vic-spec"><span class="vic-spec-label">Año</span><span class="vic-spec-value">${escapeHTML(v.anio ?? '—')}</span></div>
         <div class="vic-spec"><span class="vic-spec-label">Kilometraje</span><span class="vic-spec-value">${km}</span></div>
       </div>
       <div class="vic-owner">
@@ -208,27 +233,36 @@ async function verHistorial() {
   const url = /^\d+$/.test(valor)
     ? `${API}/historial/vehiculo/${valor}`
     : `${API}/historial/patente/${valor.toUpperCase()}`;
-  const res = await fetch(url);
+  const res  = await fetch(url);
   const data = await res.json();
-  const div = document.getElementById('resultado-historial');
-  if (!res.ok) return div.innerHTML = `<div class="alert alert-error">${data.error}</div>`;
+  const div  = document.getElementById('resultado-historial');
+  if (!res.ok) {
+    div.textContent = '';
+    const err = document.createElement('div');
+    err.className = 'alert alert-error';
+    err.textContent = data.error;
+    div.appendChild(err);
+    return;
+  }
   const veh = data.vehiculo;
-  const km = veh.kilometraje !== undefined ? Number(veh.kilometraje).toLocaleString('es-AR') + ' km' : '—';
+  const km  = veh.kilometraje !== undefined ? Number(veh.kilometraje).toLocaleString('es-AR') + ' km' : '—';
 
   const vehicleHeader = `
     <div class="historial-vehicle-header">
       <div class="hvh-left">
-        <span class="hvh-plate">${veh.patente}</span>
-        <span class="hvh-info">${veh.marca} ${veh.modelo}${veh.anio ? ' · ' + veh.anio : ''}</span>
+        <span class="hvh-plate">${escapeHTML(veh.patente)}</span>
+        <span class="hvh-info">${escapeHTML(veh.marca)} ${escapeHTML(veh.modelo)}${veh.anio ? ' · ' + escapeHTML(veh.anio) : ''}</span>
       </div>
       <span class="hvh-km">${km}</span>
     </div>`;
 
   if (!data.historial || !data.historial.length) {
-    return div.innerHTML = vehicleHeader +
+    div.innerHTML = vehicleHeader +
       '<div class="empty">Este vehículo no tiene servicios registrados aún.</div>';
+    return;
   }
 
+  // badgeClass proviene de valores internos controlados: no se escapa
   const tipoBadge = { service: 'badge-service', reparacion: 'badge-reparacion', inspeccion: 'badge-inspeccion', siniestro: 'badge-siniestro' };
 
   const timelineHTML = `
@@ -236,9 +270,9 @@ async function verHistorial() {
     <div class="service-timeline">
       ${data.historial.map(h => {
         const badgeClass = tipoBadge[h.tipo_servicio] || 'badge-default';
-        const kmServ = h.kilometraje_servicio ? Number(h.kilometraje_servicio).toLocaleString('es-AR') + ' km' : '—';
-        const desc = h.descripcion || '—';
-        const taller = h.nombre_taller || '—';
+        const kmServ = h.kilometraje_servicio != null ? Number(h.kilometraje_servicio).toLocaleString('es-AR') + ' km' : '—';
+        const desc   = h.descripcion    ? escapeHTML(h.descripcion)    : '—';
+        const taller = h.nombre_taller  ? escapeHTML(h.nombre_taller)  : '—';
         return `
           <div class="timeline-item">
             <div class="timeline-dot-col">
@@ -250,10 +284,10 @@ async function verHistorial() {
                 <div class="timeline-card-top">
                   <div class="timeline-date-row">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    ${h.fecha_servicio}
+                    ${escapeHTML(h.fecha_servicio)}
                     <span class="timeline-km-chip">${kmServ}</span>
                   </div>
-                  <span class="timeline-type-badge ${badgeClass}">${h.tipo_servicio}</span>
+                  <span class="timeline-type-badge ${badgeClass}">${escapeHTML(h.tipo_servicio)}</span>
                 </div>
                 <div class="timeline-service-desc">${desc}</div>
                 <div class="timeline-taller-row">
@@ -272,14 +306,14 @@ async function verHistorial() {
 
 async function agregarHistorial() {
   const body = {
-    vehiculo_id: parseInt(document.getElementById('hist-vehiculo-id').value),
-    tipo_servicio: document.getElementById('hist-tipo').value,
-    descripcion: document.getElementById('hist-descripcion').value,
-    fecha_servicio: document.getElementById('hist-fecha').value,
+    vehiculo_id:          parseInt(document.getElementById('hist-vehiculo-id').value),
+    tipo_servicio:        document.getElementById('hist-tipo').value,
+    descripcion:          document.getElementById('hist-descripcion').value,
+    fecha_servicio:       document.getElementById('hist-fecha').value,
     kilometraje_servicio: parseInt(document.getElementById('hist-kilometraje').value)
   };
   try {
-    const res = await fetch(`${API}/historial`, {
+    const res  = await fetch(`${API}/historial`, {
       method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(body)
     });
@@ -290,11 +324,169 @@ async function agregarHistorial() {
   } catch { showAlert('historial-alert', 'Error de conexión', 'error'); }
 }
 
+// --- ADMIN: USUARIOS Y TALLERES ---
+
+// Muestra/oculta campos de perfil de taller según el rol seleccionado
+function onRolAdminChange() {
+  const rol = document.getElementById('admin-rol').value;
+  const camposTaller = document.getElementById('taller-profile-fields');
+  if (camposTaller) camposTaller.style.display = rol === 'taller' ? 'block' : 'none';
+}
+
+// Limpia el formulario de creación de usuario
+function limpiarFormularioAdmin() {
+  ['admin-nombre', 'admin-email', 'admin-password',
+   'admin-nombre-taller', 'admin-direccion', 'admin-telefono']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const cert = document.getElementById('admin-certificado');
+  if (cert) cert.checked = false;
+  document.getElementById('admin-rol').value = 'dueno';
+  const camposTaller = document.getElementById('taller-profile-fields');
+  if (camposTaller) camposTaller.style.display = 'none';
+}
+
+// Crea un usuario (y siempre su perfil si es taller) guardando en SQLite
+async function crearUsuarioAdmin() {
+  const nombre   = document.getElementById('admin-nombre').value.trim();
+  const email    = document.getElementById('admin-email').value.trim();
+  const password = document.getElementById('admin-password').value;
+  const rol      = document.getElementById('admin-rol').value;
+
+  if (!nombre || !email || !password || !rol) {
+    return showAlert('admin-usuarios-alert', 'Todos los campos son obligatorios', 'error');
+  }
+
+  // Si el rol es taller, el nombre del taller es obligatorio
+  if (rol === 'taller') {
+    const nombreTallerCheck = (document.getElementById('admin-nombre-taller')?.value ?? '').trim();
+    if (!nombreTallerCheck) {
+      return showAlert('admin-usuarios-alert',
+        'Para crear un usuario taller, el nombre del taller es obligatorio',
+        'error');
+    }
+  }
+
+  try {
+    // 1. Crear el usuario en tabla `usuarios` vía endpoint protegido
+    const res  = await fetch(`${API}/auth/admin/usuarios`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ nombre, email, password, rol })
+    });
+    const data = await res.json();
+    if (!res.ok) return showAlert('admin-usuarios-alert', data.error, 'error');
+
+    const nuevoId = data.id;
+
+    // 2. Si es taller, crear siempre el perfil en tabla `talleres`
+    if (rol === 'taller') {
+      const nombreTaller = (document.getElementById('admin-nombre-taller')?.value ?? '').trim();
+      const certificado  = document.getElementById('admin-certificado')?.checked ? 1 : 0;
+      const direccion    = (document.getElementById('admin-direccion')?.value ?? '').trim() || null;
+      const telefono     = (document.getElementById('admin-telefono')?.value  ?? '').trim() || null;
+
+      const resTaller = await fetch(`${API}/talleres/admin/perfil`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ usuario_id: nuevoId, nombre_taller: nombreTaller, direccion, telefono, certificado })
+      });
+      const dataTaller = await resTaller.json();
+      if (!resTaller.ok) {
+        showAlert('admin-usuarios-alert',
+          `Usuario creado (ID ${escapeHTML(nuevoId)}) pero error en perfil de taller: ${escapeHTML(dataTaller.error)}`,
+          'error');
+        limpiarFormularioAdmin();
+        return;
+      }
+      const certMsg = certificado ? ' y certificado' : ' (pendiente de certificación)';
+      showAlert('admin-usuarios-alert',
+        `Usuario ${escapeHTML(data.email)} creado como taller con perfil${certMsg}`,
+        'success');
+      cargarTalleresPendientes();
+    } else {
+      showAlert('admin-usuarios-alert',
+        `Usuario ${escapeHTML(data.email)} creado con rol ${escapeHTML(data.rol)}`,
+        'success');
+    }
+
+    limpiarFormularioAdmin();
+  } catch {
+    showAlert('admin-usuarios-alert', 'Error de conexión con el servidor', 'error');
+  }
+}
+
+// Carga y muestra los talleres pendientes de certificación
+async function cargarTalleresPendientes() {
+  const div = document.getElementById('lista-talleres-pendientes');
+  if (!div) return;
+  try {
+    const res  = await fetch(`${API}/talleres/pendientes`, { headers: { Authorization: `Bearer ${token}` } });
+    const data = await res.json();
+
+    if (!res.ok) {
+      showAlert('admin-talleres-alert', data.error || 'Error al cargar talleres', 'error');
+      return;
+    }
+
+    if (!data.talleres || !data.talleres.length) {
+      div.textContent = '';
+      const empty = document.createElement('div');
+      empty.className = 'empty';
+      empty.textContent = 'No hay talleres pendientes de certificación.';
+      div.appendChild(empty);
+      return;
+    }
+
+    div.innerHTML = `
+      <table style="width:100%;border-collapse:collapse;font-size:0.9rem;">
+        <thead>
+          <tr style="border-bottom:2px solid var(--border,#e5e7eb);text-align:left;">
+            <th style="padding:8px 10px;">ID usuario</th>
+            <th style="padding:8px 10px;">Nombre taller</th>
+            <th style="padding:8px 10px;">Email</th>
+            <th style="padding:8px 10px;">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${data.talleres.map(t => `
+            <tr style="border-bottom:1px solid var(--border,#e5e7eb);">
+              <td style="padding:8px 10px;">${escapeHTML(t.usuario_id)}</td>
+              <td style="padding:8px 10px;">${escapeHTML(t.nombre_taller)}</td>
+              <td style="padding:8px 10px;">${escapeHTML(t.email_usuario)}</td>
+              <td style="padding:8px 10px;">
+                <button class="btn btn-success" style="padding:4px 12px;font-size:0.82rem;"
+                  onclick="certificarTaller(${Number(t.usuario_id)})">Certificar</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>`;
+  } catch {
+    showAlert('admin-talleres-alert', 'Error de conexión con el servidor', 'error');
+  }
+}
+
+// Certifica un taller por su usuario_id
+async function certificarTaller(usuario_id) {
+  try {
+    const res  = await fetch(`${API}/talleres/${usuario_id}/aprobar`, {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (!res.ok) return showAlert('admin-talleres-alert', data.error, 'error');
+    showAlert('admin-talleres-alert', data.mensaje, 'success');
+    cargarTalleresPendientes();
+  } catch {
+    showAlert('admin-talleres-alert', 'Error de conexión con el servidor', 'error');
+  }
+}
+
 // --- CAMBIO DE CONTRASEÑA ---
 async function cambiarPassword() {
-  const passwordActual = document.getElementById('cp-actual').value;
-  const passwordNueva = document.getElementById('cp-nueva').value;
-  const confirmarPasswordNueva = document.getElementById('cp-confirmar').value;
+  const passwordActual          = document.getElementById('cp-actual').value;
+  const passwordNueva           = document.getElementById('cp-nueva').value;
+  const confirmarPasswordNueva  = document.getElementById('cp-confirmar').value;
 
   if (!passwordActual || !passwordNueva || !confirmarPasswordNueva) {
     return showAlert('cambiar-password-alert', 'Todos los campos son obligatorios', 'error');
@@ -307,7 +499,7 @@ async function cambiarPassword() {
   }
 
   try {
-    const res = await fetch(`${API}/auth/cambiar-password`, {
+    const res  = await fetch(`${API}/auth/cambiar-password`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ passwordActual, passwordNueva, confirmarPasswordNueva })
@@ -315,8 +507,8 @@ async function cambiarPassword() {
     const data = await res.json();
     if (!res.ok) return showAlert('cambiar-password-alert', data.error, 'error');
     showAlert('cambiar-password-alert', 'Contraseña actualizada correctamente', 'success');
-    document.getElementById('cp-actual').value = '';
-    document.getElementById('cp-nueva').value = '';
+    document.getElementById('cp-actual').value   = '';
+    document.getElementById('cp-nueva').value    = '';
     document.getElementById('cp-confirmar').value = '';
   } catch {
     showAlert('cambiar-password-alert', 'Error de conexión con el servidor', 'error');
@@ -330,8 +522,14 @@ function formatRol(rol) {
 }
 
 function showAlert(id, msg, tipo) {
-  document.getElementById(id).innerHTML = `<div class="alert alert-${tipo}">${msg}</div>`;
-  setTimeout(() => document.getElementById(id).innerHTML = '', 4000);
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = '';
+  const div = document.createElement('div');
+  div.className = `alert alert-${tipo}`;
+  div.textContent = msg; // textContent escapa automáticamente
+  el.appendChild(div);
+  setTimeout(() => { if (el) el.textContent = ''; }, 4000);
 }
 
 document.addEventListener('keydown', e => {

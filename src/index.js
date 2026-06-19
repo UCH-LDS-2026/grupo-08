@@ -9,9 +9,10 @@ if (!process.env.JWT_SECRET) {
 }
 
 const db = require('./config/database');
-const authRoutes = require('./routes/authRoutes');
+const authRoutes     = require('./routes/authRoutes');
 const vehiculoRoutes = require('./routes/vehiculoRoutes');
 const historialRoutes = require('./routes/historialRoutes');
+const tallerRoutes   = require('./routes/tallerRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -20,9 +21,10 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-app.use('/api/auth', authRoutes);
+app.use('/api/auth',      authRoutes);
 app.use('/api/vehiculos', vehiculoRoutes);
 app.use('/api/historial', historialRoutes);
+app.use('/api/talleres',  tallerRoutes);
 
 
 app.listen(PORT, () => {
