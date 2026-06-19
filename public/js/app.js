@@ -324,7 +324,28 @@ async function agregarHistorial() {
   } catch { showAlert('historial-alert', 'Error de conexión', 'error'); }
 }
 
-// --- ADMIN: CREAR USUARIO ---
+// --- ADMIN: USUARIOS Y TALLERES ---
+
+// Muestra/oculta campos de perfil de taller según el rol seleccionado
+function onRolAdminChange() {
+  const rol = document.getElementById('admin-rol').value;
+  const camposTaller = document.getElementById('taller-profile-fields');
+  if (camposTaller) camposTaller.style.display = rol === 'taller' ? 'block' : 'none';
+}
+
+// Limpia el formulario de creación de usuario
+function limpiarFormularioAdmin() {
+  ['admin-nombre', 'admin-email', 'admin-password',
+   'admin-nombre-taller', 'admin-direccion', 'admin-telefono']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const cert = document.getElementById('admin-certificado');
+  if (cert) cert.checked = false;
+  document.getElementById('admin-rol').value = 'dueno';
+  const camposTaller = document.getElementById('taller-profile-fields');
+  if (camposTaller) camposTaller.style.display = 'none';
+}
+
+// Crea un usuario (y opcionalmente su perfil de taller) guardando en SQLite
 async function crearUsuarioAdmin() {
   const nombre   = document.getElementById('admin-nombre').value.trim();
   const email    = document.getElementById('admin-email').value.trim();
@@ -336,6 +357,7 @@ async function crearUsuarioAdmin() {
   }
 
   try {
+    // 1. Crear el usuario en tabla `usuarios` vía endpoint protegido
     const res  = await fetch(`${API}/auth/admin/usuarios`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -343,11 +365,116 @@ async function crearUsuarioAdmin() {
     });
     const data = await res.json();
     if (!res.ok) return showAlert('admin-usuarios-alert', data.error, 'error');
-    showAlert('admin-usuarios-alert', `Usuario ${escapeHTML(data.email)} creado con rol ${escapeHTML(data.rol)}`, 'success');
-    ['admin-nombre', 'admin-email', 'admin-password'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('admin-rol').value = 'dueno';
+
+    const nuevoId = data.id;
+
+    // 2. Si es taller y hay nombre de taller, crear perfil en tabla `talleres`
+    if (rol === 'taller') {
+      const nombreTaller = (document.getElementById('admin-nombre-taller')?.value ?? '').trim();
+      if (nombreTaller) {
+        const certificado = document.getElementById('admin-certificado')?.checked ? 1 : 0;
+        const direccion   = (document.getElementById('admin-direccion')?.value ?? '').trim() || null;
+        const telefono    = (document.getElementById('admin-telefono')?.value  ?? '').trim() || null;
+
+        const resTaller = await fetch(`${API}/talleres/admin/perfil`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ usuario_id: nuevoId, nombre_taller: nombreTaller, direccion, telefono, certificado })
+        });
+        const dataTaller = await resTaller.json();
+        if (!resTaller.ok) {
+          showAlert('admin-usuarios-alert',
+            `Usuario creado (ID ${escapeHTML(nuevoId)}) pero error en perfil de taller: ${escapeHTML(dataTaller.error)}`,
+            'error');
+          limpiarFormularioAdmin();
+          return;
+        }
+        const certMsg = certificado ? ' y certificado' : ' (pendiente de certificación)';
+        showAlert('admin-usuarios-alert',
+          `Usuario ${escapeHTML(data.email)} creado como taller con perfil${certMsg}`,
+          'success');
+        cargarTalleresPendientes();
+      } else {
+        showAlert('admin-usuarios-alert',
+          `Usuario ${escapeHTML(data.email)} creado como taller (sin perfil aún — podés crearlo desde Talleres pendientes)`,
+          'success');
+      }
+    } else {
+      showAlert('admin-usuarios-alert',
+        `Usuario ${escapeHTML(data.email)} creado con rol ${escapeHTML(data.rol)}`,
+        'success');
+    }
+
+    limpiarFormularioAdmin();
   } catch {
     showAlert('admin-usuarios-alert', 'Error de conexión con el servidor', 'error');
+  }
+}
+
+// Carga y muestra los talleres pendientes de certificación
+async function cargarTalleresPendientes() {
+  const div = document.getElementById('lista-talleres-pendientes');
+  if (!div) return;
+  try {
+    const res  = await fetch(`${API}/talleres/pendientes`, { headers: { Authorization: `Bearer ${token}` } });
+    const data = await res.json();
+
+    if (!res.ok) {
+      showAlert('admin-talleres-alert', data.error || 'Error al cargar talleres', 'error');
+      return;
+    }
+
+    if (!data.talleres || !data.talleres.length) {
+      div.textContent = '';
+      const empty = document.createElement('div');
+      empty.className = 'empty';
+      empty.textContent = 'No hay talleres pendientes de certificación.';
+      div.appendChild(empty);
+      return;
+    }
+
+    div.innerHTML = `
+      <table style="width:100%;border-collapse:collapse;font-size:0.9rem;">
+        <thead>
+          <tr style="border-bottom:2px solid var(--border,#e5e7eb);text-align:left;">
+            <th style="padding:8px 10px;">ID usuario</th>
+            <th style="padding:8px 10px;">Nombre taller</th>
+            <th style="padding:8px 10px;">Email</th>
+            <th style="padding:8px 10px;">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${data.talleres.map(t => `
+            <tr style="border-bottom:1px solid var(--border,#e5e7eb);">
+              <td style="padding:8px 10px;">${escapeHTML(t.usuario_id)}</td>
+              <td style="padding:8px 10px;">${escapeHTML(t.nombre_taller)}</td>
+              <td style="padding:8px 10px;">${escapeHTML(t.email_usuario)}</td>
+              <td style="padding:8px 10px;">
+                <button class="btn btn-success" style="padding:4px 12px;font-size:0.82rem;"
+                  onclick="certificarTaller(${Number(t.usuario_id)})">Certificar</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>`;
+  } catch {
+    showAlert('admin-talleres-alert', 'Error de conexión con el servidor', 'error');
+  }
+}
+
+// Certifica un taller por su usuario_id
+async function certificarTaller(usuario_id) {
+  try {
+    const res  = await fetch(`${API}/talleres/${usuario_id}/aprobar`, {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (!res.ok) return showAlert('admin-talleres-alert', data.error, 'error');
+    showAlert('admin-talleres-alert', data.mensaje, 'success');
+    cargarTalleresPendientes();
+  } catch {
+    showAlert('admin-talleres-alert', 'Error de conexión con el servidor', 'error');
   }
 }
 
