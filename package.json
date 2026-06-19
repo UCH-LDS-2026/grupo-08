@@ -8,7 +8,8 @@
     "dev": "nodemon src/index.js",
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "create:admin": "node scripts/createAdmin.js"
+    "create:admin": "node scripts/createAdmin.js",
+    "reset:demo": "node scripts/resetDemoData.js"
   },
   "jest": {
     "testEnvironment": "node",
