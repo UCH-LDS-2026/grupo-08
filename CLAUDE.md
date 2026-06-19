@@ -87,17 +87,22 @@ grupo-08/
 
 ## Rutas API
 
-| Método | Ruta | Auth | Roles |
-|---|---|---|---|
-| POST | `/api/auth/registro` | No | — |
-| POST | `/api/auth/login` | No | — |
-| PUT | `/api/auth/cambiar-password` | Token | todos |
-| POST | `/api/vehiculos` | Token | dueno, admin |
-| GET | `/api/vehiculos/mis-vehiculos` | Token | todos |
-| GET | `/api/vehiculos/patente/:patente` | Token | todos |
-| POST | `/api/historial` | Token | taller, admin |
-| GET | `/api/historial/vehiculo/:id` | No | público |
-| GET | `/api/historial/patente/:patente` | No | público |
+| Método | Ruta | Auth | Roles | Notas |
+|---|---|---|---|---|
+| POST | `/api/auth/registro` | No | — | Solo crea rol `dueno` |
+| POST | `/api/auth/login` | No | — | |
+| PUT | `/api/auth/cambiar-password` | Token | todos | |
+| POST | `/api/auth/admin/usuarios` | Token | admin | Crea cualquier rol |
+| POST | `/api/vehiculos` | Token | dueno, admin | Valida formato patente y año |
+| GET | `/api/vehiculos/mis-vehiculos` | Token | todos | |
+| GET | `/api/vehiculos/patente/:patente` | Token | todos | Privacidad según rol |
+| POST | `/api/historial` | Token | taller cert., admin | Taller debe estar certificado |
+| GET | `/api/historial/vehiculo/:id` | No | público | Vehiculo saneado (sin dueno_id) |
+| GET | `/api/historial/patente/:patente` | No | público | Vehiculo saneado (sin dueno_id) |
+| POST | `/api/talleres/perfil` | Token | taller | Crea perfil (pendiente cert.) |
+| GET | `/api/talleres` | Token | admin | Lista talleres |
+| GET | `/api/talleres/pendientes` | Token | admin | Lista sin certificar |
+| PUT | `/api/talleres/:id/aprobar` | Token | admin | Certifica taller |
 
 Normalización: email → `trim().toLowerCase()` · patente → `trim().toUpperCase()`
 
@@ -148,37 +153,35 @@ dist/ / build/
 ## Estado actual del proyecto
 
 ### Implementado ✓
-- Auth completo (registro, login, JWT, cambio de contraseña)
-- Normalización de email y patente
-- CRUD parcial de vehículos (registro, listado, búsqueda por patente)
-- Historial de servicios (carga y consulta por ID o patente)
-- Control de roles en backend (middleware) y frontend (sidebar)
-- Frontend rediseñado: sidebar, cards de vehículos, timeline, tarjeta de identidad
-- Frontend separado: `public/index.html` + `public/css/styles.css` + `public/js/app.js`
-- Documentación TP3: README, arquitectura, schema.sql, diagrama ER Mermaid
-- TP4: 49 tests unitarios con Jest · 100 % cobertura en módulos productivos activos
-  - `tests/unit/authMiddleware.test.js` (7 tests)
-  - `tests/unit/authController.test.js` (18 tests)
-  - `tests/unit/vehiculoController.test.js` (11 tests)
-  - `tests/unit/historialController.test.js` (13 tests)
+- Auth: registro solo para dueños · login JWT · cambio de contraseña · creación interna por admin
+- Script `npm run create:admin` para crear el primer administrador
+- Validaciones backend: email, contraseña (≥6), formato de patente, año (1900-actual+1), km (≥0), fecha no futura, tipo_servicio
+- `src/utils/validators.js` y `src/utils/sanitizers.js` como utilidades reutilizables
+- Middleware JWT con validación estricta del esquema `Bearer`
+- Foreign keys activadas: `db.pragma('foreign_keys = ON')` en `src/config/database.js`
+- Módulo de talleres: perfil, certificación por admin, control de acceso al historial
+- Privacidad en búsqueda por patente según rol (admin/dueño-propietario/taller-cert./ajeno)
+- Saneamiento del vehículo público (sin dueno_id) en endpoints de historial
+- Frontend con `escapeHTML()` en todos los valores dinámicos (prevención de XSS)
+- Registro público sin selector de rol (solo dueños)
+- Archivos heredados eliminados: `usuarioController.js`, `routes/usuarios.js`, `routes/vehiculos.js`
+- TP4 + hardening: 140 tests unitarios con Jest · 97 % cobertura (100 % funciones)
+  - `tests/unit/authMiddleware.test.js` (8 tests)
+  - `tests/unit/authController.test.js` (26 tests)
+  - `tests/unit/vehiculoController.test.js` (20 tests)
+  - `tests/unit/historialController.test.js` (24 tests)
+  - `tests/unit/tallerController.test.js` (9 tests)
+  - `tests/unit/validators.test.js` (35 tests)
+- GitHub Actions: `.github/workflows/tests.yml` ejecuta `npm test` en PR y push a `main`
 
 ### Testing
 - Framework: Jest ^30.4.2 · entorno: Node
 - Ejecutar: `npm test` / `npm run test:coverage`
-- Alcance: controladores y middleware activos (excluye `usuarioController.js`, no montado)
+- Scope: controllers/ + middlewares/ + utils/ activos
 - Ver `docs/tp4-testing.md` para detalles completos
 
-### Archivos heredados (no activos — pendientes de eliminación)
-- `src/controllers/usuarioController.js`: implementación de auth alternativa, no registrada en `src/index.js`
-- `src/routes/usuarios.js`: rutas para el controlador anterior, no montadas
-- `src/routes/vehiculos.js`: referencia a funciones inexistentes en `vehiculoController.js`, no montadas
-
 ### Pendiente / Futuro
-- Eliminar archivos heredados no activos (PR separado)
 - Tests de integración (Supertest)
 - Módulo de deudas con endpoints CRUD
-- Módulo de talleres con endpoints CRUD
 - Migración a PostgreSQL para producción
 - Deploy productivo
-- Activar `PRAGMA foreign_keys = ON` en SQLite
-- Proteger rutas públicas de historial si se requiere mayor privacidad

@@ -213,12 +213,49 @@ Este es el modelo oficial porque está alineado directamente con el esquema defi
 
 ---
 
+## Seguridad y privacidad (hardening)
+
+### Registro público restringido
+El endpoint `POST /api/auth/registro` solo acepta rol `dueno`. Los roles `taller` y `admin` se crean únicamente a través de `POST /api/auth/admin/usuarios` (requiere token de admin). El primer administrador se crea con el script `npm run create:admin`.
+
+### Creación controlada de usuarios
+Los admins pueden crear usuarios de cualquier rol vía `POST /api/auth/admin/usuarios`. Este endpoint valida email (formato), contraseña (≥6 chars) y rol antes de insertar.
+
+### Módulo de talleres y certificación
+Los talleres deben crear su perfil (`POST /api/talleres/perfil`) y esperar aprobación de un admin (`PUT /api/talleres/:id/aprobar`). Solo los talleres certificados pueden cargar historial. Los admins pueden cargar historial siempre.
+
+### Privacidad en búsqueda por patente
+`GET /api/vehiculos/patente/:patente` filtra `dueno_nombre` y `dueno_email` según rol:
+- `admin`: ve ambos campos
+- `dueno` propietario: ve ambos campos
+- `taller` certificado: ve nombre, no email
+- Taller no certificado / dueño ajeno: ambos campos en `null`
+
+### Saneamiento de respuestas públicas
+Los endpoints `GET /api/historial/*` son públicos pero el objeto `vehiculo` en la respuesta no incluye `dueno_id` ni datos personales. Implementado en `src/utils/sanitizers.js`.
+
+### Validación estricta del esquema Bearer
+`verificarToken` comprueba que el header `Authorization` comience exactamente con `Bearer ` (espacio incluido). Rechaza esquemas alternativos (`Basic`, sin prefijo, etc.).
+
+### Foreign keys activadas en SQLite
+`db.pragma('foreign_keys = ON')` se ejecuta al iniciar la conexión en `src/config/database.js`. Las restricciones de integridad referencial declaradas en el esquema son ahora efectivas.
+
+### Validaciones backend centralizadas
+`src/utils/validators.js` provee funciones puras para: email, contraseña, patente (formato viejo/Mercosur), año de vehículo (1900-actual+1), entero no negativo, fecha válida, fecha no futura, tipo de servicio, y limpieza de texto con límite de longitud.
+
+### Escape de HTML en frontend
+`public/js/app.js` incluye la función `escapeHTML()` aplicada a todos los valores dinámicos que se insertan con `innerHTML`. La función `showAlert` usa `textContent` en lugar de `innerHTML` para mensajes de usuario.
+
+### GitHub Actions
+`.github/workflows/tests.yml` ejecuta `npm test` automáticamente en cada PR hacia `main` y en cada push a `main`, usando Node.js 24 en `ubuntu-latest`.
+
+---
+
 ## Limitaciones actuales
 
-- **Sin tests automáticos** — no hay tests unitarios ni de integración implementados.
 - **SQLite no apta para producción multiusuario** — sin concurrencia avanzada ni réplicas.
-- **Tablas `talleres` y `deudas` sin módulo funcional** — el esquema está definido pero no tienen endpoints API activos.
-- **Historial consultable públicamente** — los endpoints `GET /api/historial/*` no requieren token según el código actual.
+- **Módulo `deudas` sin endpoints activos** — el esquema está definido pero no tiene API.
+- **Historial consultable públicamente sin autenticación** — diseño actual; puede restringirse si se requiere mayor privacidad.
 - **Sin deploy productivo** — el sistema corre solo en entorno local.
 - **Sin manejo de refresh de token** — el JWT expira a las 24h sin posibilidad de renovación automática.
 

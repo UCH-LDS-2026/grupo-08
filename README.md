@@ -293,25 +293,37 @@ Este archivo contiene un diagrama ER en formato Mermaid basado en el esquema rea
 
 ## Pruebas
 
-### Ejecutar tests unitarios
+### Ejecutar tests
 
 ```bash
-npm test                 # Corre los 49 tests unitarios
+npm test                 # Corre los 140 tests unitarios
 npm run test:coverage    # Genera reporte de cobertura en coverage/
 ```
 
-### Cobertura (módulos productivos activos)
+Los pull requests hacia `main` ejecutan los tests automáticamente vía GitHub Actions (`.github/workflows/tests.yml`).
+
+### Cobertura (módulos productivos activos — TP4 + hardening)
 
 | Módulo | Statements | Branches | Functions | Lines |
 |---|---|---|---|---|
-| `authController.js` | 100 % | 100 % | 100 % | 100 % |
+| `authController.js` | 96 % | 93 % | 100 % | 96 % |
 | `historialController.js` | 100 % | 100 % | 100 % | 100 % |
-| `vehiculoController.js` | 100 % | 100 % | 100 % | 100 % |
+| `tallerController.js` | 100 % | 92 % | 100 % | 100 % |
+| `vehiculoController.js` | 96 % | 92 % | 100 % | 100 % |
 | `authMiddleware.js` | 100 % | 100 % | 100 % | 100 % |
+| `validators.js` | 100 % | 100 % | 100 % | 100 % |
+| `sanitizers.js` | 71 % | 50 % | 100 % | 100 % |
+| **Total** | **97 %** | **94 %** | **100 %** | **99 %** |
 
-La cobertura corresponde al 100 % de los módulos productivos activos incluidos en el alcance unitario del TP4.
+Cobertura sobre los módulos productivos activos del alcance unitario. No representa el 100 % del proyecto total.
 El reporte HTML detallado está en `coverage/lcov-report/index.html`.
 Documentación completa: [`docs/tp4-testing.md`](docs/tp4-testing.md).
+
+### Crear primer administrador
+
+```bash
+ADMIN_NAME="Admin" ADMIN_EMAIL="admin@ejemplo.com" ADMIN_PASSWORD="admin123" npm run create:admin
+```
 
 ---
 
@@ -319,26 +331,43 @@ Documentación completa: [`docs/tp4-testing.md`](docs/tp4-testing.md).
 
 ### Funcionalidades implementadas
 
-- Registro de usuarios con email normalizado
-- Login con JWT (24h de expiración)
-- Roles y control de acceso por rol
-- Cambio de contraseña autenticado
-- Registro de vehículos con normalización de patente
-- Validación de patentes duplicadas
-- Búsqueda de vehículo por patente con datos del propietario
-- Historial de servicios por ID de vehículo o patente
-- Carga de servicios al historial
-- Frontend rediseñado con layout moderno (sidebar, cards, timeline)
-- Frontend separado en HTML / CSS / JS
+- Auth: registro (solo dueños), login JWT, cambio de contraseña, creación interna por admin
+- Registro de vehículos con validación de formato de patente (vieja/Mercosur) y año
+- Búsqueda por patente con privacidad según rol (admin/dueño/taller certificado/ajeno)
+- Módulo de talleres: perfil, certificación por admin, control de acceso al historial
+- Historial de servicios con validación de tipo, fecha y kilometraje; saneamiento público
+- Validaciones backend: email, contraseña, patente, año, km, fecha, tipo de servicio
+- Foreign keys activadas en SQLite (`PRAGMA foreign_keys = ON`)
+- Middleware JWT con validación estricta del esquema `Bearer`
+- Frontend con escape de HTML en todos los valores dinámicos (prevención de XSS)
+- 140 tests unitarios con Jest · 97 % cobertura en módulos activos
+- GitHub Actions: tests automáticos en PR y push a `main`
+
+### Rutas API actuales
+
+| Método | Ruta | Auth | Roles |
+|---|---|---|---|
+| POST | `/api/auth/registro` | No | solo dueno |
+| POST | `/api/auth/login` | No | público |
+| PUT | `/api/auth/cambiar-password` | Token | todos |
+| POST | `/api/auth/admin/usuarios` | Token | admin |
+| POST | `/api/vehiculos` | Token | dueno, admin |
+| GET | `/api/vehiculos/mis-vehiculos` | Token | todos |
+| GET | `/api/vehiculos/patente/:patente` | Token | todos |
+| POST | `/api/historial` | Token | taller cert., admin |
+| GET | `/api/historial/vehiculo/:id` | No | público |
+| GET | `/api/historial/patente/:patente` | No | público |
+| POST | `/api/talleres/perfil` | Token | taller |
+| GET | `/api/talleres` | Token | admin |
+| GET | `/api/talleres/pendientes` | Token | admin |
+| PUT | `/api/talleres/:id/aprobar` | Token | admin |
 
 ### Pendiente o previsto a futuro
 
 - Tests de integración (Supertest)
 - Módulo funcional de deudas (endpoints CRUD)
-- Módulo funcional de talleres (certificaciones, perfil)
-- Validación de formato de patente
 - Deploy en entorno productivo
-- Mejoras de seguridad y auditoría
+- Migración a PostgreSQL para producción multiusuario
 - Migración a PostgreSQL para producción multiusuario
 - Eliminar archivos heredados no activos (`usuarioController.js`, `routes/usuarios.js`, `routes/vehiculos.js`)
 
