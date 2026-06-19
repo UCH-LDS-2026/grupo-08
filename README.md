@@ -319,7 +319,18 @@ Cobertura sobre los módulos productivos activos del alcance unitario. No repres
 El reporte HTML detallado está en `coverage/lcov-report/index.html`.
 Documentación completa: [`docs/tp4-testing.md`](docs/tp4-testing.md).
 
-### Crear primer administrador
+### Inicio rápido local (cuenta demo incluida)
+
+Para una guía completa paso a paso, ver [`docs/INICIO_RAPIDO_LOCAL.md`](docs/INICIO_RAPIDO_LOCAL.md).
+
+```bash
+npm run reset:demo   # Reinicia datos y crea admin@gmail.com / admin (solo demo local)
+npm start            # Inicia el servidor en http://localhost:3000
+```
+
+> ⚠️ `reset:demo` elimina todos los datos locales y crea una cuenta demo con contraseña corta. No usar en producción.
+
+### Crear primer administrador (entorno real)
 
 ```bash
 ADMIN_NAME="Admin" ADMIN_EMAIL="admin@ejemplo.com" ADMIN_PASSWORD="admin123" npm run create:admin

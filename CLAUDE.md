@@ -177,8 +177,20 @@ dist/ / build/
 ### Testing
 - Framework: Jest ^30.4.2 · entorno: Node
 - Ejecutar: `npm test` / `npm run test:coverage`
+- Total: 143 tests en 6 suites · 97 % statements · 100 % funciones
 - Scope: controllers/ + middlewares/ + utils/ activos
 - Ver `docs/tp4-testing.md` para detalles completos
+
+### Scripts de desarrollo local
+- `npm run reset:demo` — elimina todos los datos locales y crea admin demo (admin@gmail.com / admin)
+  - La contraseña `admin` (5 chars) es una excepción local; el sistema sigue exigiendo ≥6 chars en general
+- `npm run create:admin` — crea admin personalizado con variables de entorno (requiere password ≥6)
+- `docs/INICIO_RAPIDO_LOCAL.md` — guía paso a paso para levantar el proyecto desde cero
+
+### Panel admin en frontend
+- Pestaña "Crear usuarios" visible solo cuando `usuarioActual.rol === 'admin'`
+- Permite crear usuarios con rol dueno, taller o admin vía POST /api/auth/admin/usuarios
+- La protección real está en el backend (verificarToken + verificarRoles(['admin']))
 
 ### Pendiente / Futuro
 - Tests de integración (Supertest)
