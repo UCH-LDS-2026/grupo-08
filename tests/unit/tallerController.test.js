@@ -1,6 +1,8 @@
 jest.mock('../../src/models/tallerModel');
+jest.mock('../../src/models/usuarioModel');
 
-const Taller = require('../../src/models/tallerModel');
+const Taller  = require('../../src/models/tallerModel');
+const Usuario = require('../../src/models/usuarioModel');
 const tallerController = require('../../src/controllers/tallerController');
 
 describe('tallerController', () => {
@@ -13,7 +15,7 @@ describe('tallerController', () => {
   });
 
   // ─────────────────────────────────────────────
-  // crearPerfil
+  // crearPerfil (por el propio taller)
   // ─────────────────────────────────────────────
   describe('crearPerfil', () => {
     it('retorna 400 si falta nombre_taller', () => {
@@ -52,13 +54,93 @@ describe('tallerController', () => {
       );
     });
 
-    it('crea el perfil sin campos opcionales (sin direccion ni telefono)', () => {
+    it('siempre crea el perfil con certificado=0 (sin 5.º arg)', () => {
       req.body = { nombre_taller: 'Taller Norte' };
       Taller.buscarPorUsuarioId.mockReturnValue(null);
       Taller.crearPerfil.mockReturnValue({ lastInsertRowid: 4 });
       tallerController.crearPerfil(req, res);
+      // El controller llama con 4 argumentos; certificado toma el default 0 del modelo
       expect(Taller.crearPerfil).toHaveBeenCalledWith(2, 'Taller Norte', null, null);
       expect(res.status).toHaveBeenCalledWith(201);
+    });
+  });
+
+  // ─────────────────────────────────────────────
+  // crearPerfilDesdeAdmin (endpoint POST /talleres/admin/perfil)
+  // ─────────────────────────────────────────────
+  describe('crearPerfilDesdeAdmin', () => {
+    beforeEach(() => {
+      req.usuario = { id: 1, rol: 'admin' };
+    });
+
+    it('retorna 400 si falta usuario_id', () => {
+      req.body = { nombre_taller: 'Taller SRL' };
+      tallerController.crearPerfilDesdeAdmin(req, res);
+      expect(res.status).toHaveBeenCalledWith(400);
+    });
+
+    it('retorna 400 si falta nombre_taller', () => {
+      req.body = { usuario_id: 5 };
+      tallerController.crearPerfilDesdeAdmin(req, res);
+      expect(res.status).toHaveBeenCalledWith(400);
+    });
+
+    it('retorna 404 si el usuario no existe', () => {
+      req.body = { usuario_id: 99, nombre_taller: 'Taller SRL' };
+      Usuario.buscarPorId.mockReturnValue(null);
+      tallerController.crearPerfilDesdeAdmin(req, res);
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({ error: 'Usuario no encontrado' });
+    });
+
+    it('retorna 400 si el usuario no tiene rol taller', () => {
+      req.body = { usuario_id: 3, nombre_taller: 'Taller SRL' };
+      Usuario.buscarPorId.mockReturnValue({ id: 3, rol: 'dueno' });
+      tallerController.crearPerfilDesdeAdmin(req, res);
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ error: expect.stringContaining('rol taller') })
+      );
+    });
+
+    it('retorna 400 si el usuario ya tiene perfil de taller', () => {
+      req.body = { usuario_id: 5, nombre_taller: 'Taller SRL' };
+      Usuario.buscarPorId.mockReturnValue({ id: 5, rol: 'taller' });
+      Taller.buscarPorUsuarioId.mockReturnValue({ id: 1 });
+      tallerController.crearPerfilDesdeAdmin(req, res);
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ error: expect.stringContaining('ya tiene un perfil') })
+      );
+    });
+
+    it('crea perfil sin certificar (certificado=false) y retorna 201', () => {
+      req.body = { usuario_id: 5, nombre_taller: 'Taller SRL', certificado: false };
+      Usuario.buscarPorId.mockReturnValue({ id: 5, rol: 'taller' });
+      Taller.buscarPorUsuarioId.mockReturnValue(null);
+      Taller.crearPerfil.mockReturnValue({ lastInsertRowid: 7 });
+      tallerController.crearPerfilDesdeAdmin(req, res);
+      expect(Taller.crearPerfil).toHaveBeenCalledWith(5, 'Taller SRL', null, null, 0);
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 7, certificado: false, mensaje: expect.stringContaining('Pendiente') })
+      );
+    });
+
+    it('crea perfil certificado (certificado=true) y retorna 201', () => {
+      req.body = {
+        usuario_id: 5, nombre_taller: 'Taller SRL',
+        direccion: 'Calle 123', telefono: '261000', certificado: true
+      };
+      Usuario.buscarPorId.mockReturnValue({ id: 5, rol: 'taller' });
+      Taller.buscarPorUsuarioId.mockReturnValue(null);
+      Taller.crearPerfil.mockReturnValue({ lastInsertRowid: 8 });
+      tallerController.crearPerfilDesdeAdmin(req, res);
+      expect(Taller.crearPerfil).toHaveBeenCalledWith(5, 'Taller SRL', 'Calle 123', '261000', 1);
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 8, certificado: true })
+      );
     });
   });
 

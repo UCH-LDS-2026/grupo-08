@@ -1,8 +1,9 @@
-const Taller = require('../models/tallerModel');
+const Taller  = require('../models/tallerModel');
+const Usuario = require('../models/usuarioModel');
 
 const tallerController = {
 
-    // POST /api/talleres/perfil — crea perfil del taller autenticado
+    // POST /api/talleres/perfil — taller crea su propio perfil (siempre certificado=0)
     crearPerfil: (req, res) => {
         const usuario_id = req.usuario.id;
         const { nombre_taller, direccion, telefono } = req.body;
@@ -21,11 +22,54 @@ const tallerController = {
             nombre_taller.trim(),
             direccion ? String(direccion).trim() : null,
             telefono  ? String(telefono).trim()  : null
+            // certificado = 0 (default): taller comienza sin certificar
         );
 
         res.status(201).json({
             mensaje: 'Perfil de taller creado. Pendiente de certificación por un administrador.',
             id: resultado.lastInsertRowid
+        });
+    },
+
+    // POST /api/talleres/admin/perfil — admin crea perfil para un usuario taller
+    crearPerfilDesdeAdmin: (req, res) => {
+        const { usuario_id, nombre_taller, direccion, telefono, certificado } = req.body;
+
+        if (!usuario_id || !nombre_taller || !String(nombre_taller).trim()) {
+            return res.status(400).json({ error: 'usuario_id y nombre_taller son obligatorios' });
+        }
+
+        const usuario = Usuario.buscarPorId(usuario_id);
+        if (!usuario) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        if (usuario.rol !== 'taller') {
+            return res.status(400).json({
+                error: 'El usuario debe tener rol taller para crear un perfil de taller'
+            });
+        }
+
+        const perfilExistente = Taller.buscarPorUsuarioId(usuario_id);
+        if (perfilExistente) {
+            return res.status(400).json({ error: 'Este usuario ya tiene un perfil de taller' });
+        }
+
+        const cert = certificado ? 1 : 0;
+        const resultado = Taller.crearPerfil(
+            usuario_id,
+            String(nombre_taller).trim(),
+            direccion ? String(direccion).trim() : null,
+            telefono  ? String(telefono).trim()  : null,
+            cert
+        );
+
+        res.status(201).json({
+            mensaje: cert
+                ? 'Perfil de taller creado y certificado exitosamente'
+                : 'Perfil de taller creado. Pendiente de certificación.',
+            id: resultado.lastInsertRowid,
+            certificado: Boolean(cert)
         });
     },
 

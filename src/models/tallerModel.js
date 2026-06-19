@@ -6,11 +6,12 @@ const Taller = {
         return db.prepare('SELECT * FROM talleres WHERE usuario_id = ?').get(usuario_id);
     },
 
-    crearPerfil: (usuario_id, nombre_taller, direccion, telefono) => {
+    // certificado = 0 cuando lo crea el propio taller; puede ser 1 cuando lo crea un admin
+    crearPerfil: (usuario_id, nombre_taller, direccion, telefono, certificado = 0) => {
         return db.prepare(`
-            INSERT INTO talleres (usuario_id, nombre_taller, direccion, telefono)
-            VALUES (?, ?, ?, ?)
-        `).run(usuario_id, nombre_taller, direccion || null, telefono || null);
+            INSERT INTO talleres (usuario_id, nombre_taller, direccion, telefono, certificado)
+            VALUES (?, ?, ?, ?, ?)
+        `).run(usuario_id, nombre_taller, direccion || null, telefono || null, certificado);
     },
 
     listar: () => {
