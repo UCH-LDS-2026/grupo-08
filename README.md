@@ -107,6 +107,12 @@ Las dependencias exactas se encuentran en `package.json`.
 
 ---
 
+## Inicio rápido en Mac
+
+Hacer doble clic en **`INICIAR_HISTORYCAR.command`** o seguir la guía paso a paso en [`docs/INICIO_RAPIDO_LOCAL.md`](docs/INICIO_RAPIDO_LOCAL.md).
+
+---
+
 ## Instalación y ejecución local
 
 ### Requisitos previos

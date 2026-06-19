@@ -182,10 +182,11 @@ dist/ / build/
 - Scope: controllers/ + middlewares/ + utils/ activos
 - Ver `docs/tp4-testing.md` para detalles completos
 
-### Scripts de desarrollo local
+### Scripts y ejecutables de desarrollo local
 - `npm run reset:demo` — elimina todos los datos locales y crea admin demo (admin@gmail.com / admin)
   - La contraseña `admin` (5 chars) es una excepción local; el sistema sigue exigiendo ≥6 chars en general
 - `npm run create:admin` — crea admin personalizado con variables de entorno (requiere password ≥6)
+- `INICIAR_HISTORYCAR.command` — ejecutable para doble clic en macOS; instala deps, crea .env, crea base demo si falta, abre navegador e inicia el servidor
 - `docs/INICIO_RAPIDO_LOCAL.md` — guía paso a paso para levantar el proyecto desde cero
 
 ### Panel admin en frontend ("Usuarios y talleres")

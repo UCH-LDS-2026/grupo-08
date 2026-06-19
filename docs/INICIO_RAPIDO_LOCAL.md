@@ -2,7 +2,29 @@
 
 Universidad Champagnat · LDS 2026 · Grupo 8
 
-Guía paso a paso para levantar HistoryCar en cualquier Mac de desarrollo.
+---
+
+## Opción rápida con doble clic (macOS)
+
+1. Abrí la carpeta del proyecto en Finder.
+2. Hacé doble clic en **`INICIAR_HISTORYCAR.command`**.
+3. El script hace automáticamente:
+   - verifica que Node.js y npm estén disponibles;
+   - instala dependencias si no existe `node_modules/`;
+   - crea `.env` si no existe;
+   - crea la base demo si no existe `historycar.db` (ejecuta `npm run reset:demo`);
+   - si `historycar.db` ya existe, pregunta antes de borrar datos;
+   - abre el navegador en `http://localhost:3000`;
+   - inicia el servidor.
+4. Credenciales demo (solo después de ejecutar `reset:demo`):
+   - **Email:** `admin@gmail.com`
+   - **Password:** `admin`
+
+> ⚠️ Si el script pregunta si querés reiniciar datos demo, escribir `SI` elimina **todos** los datos locales anteriores.
+
+---
+
+## Guía paso a paso (alternativa manual)
 
 ---
 
@@ -143,10 +165,12 @@ http://localhost:3000
    - Email: `taller@test.com`
    - Password: `taller123`
    - Rol: `Taller mecánico`
-   - Nombre del taller: `Taller Demo SRL`
+   - **Nombre del taller: `Taller Demo SRL`** ← obligatorio para rol taller
    - Dirección: `Calle 123` (opcional)
    - Teléfono: `2610000000` (opcional)
    - Marcar **Certificar taller inmediatamente**
+   > Al crear un usuario con rol taller, el nombre del taller es obligatorio.
+   > El perfil se crea automáticamente junto con el usuario.
 5. Los usuarios creados quedan en `historycar.db` y pueden iniciar sesión.
 
 ### Probar el flujo de dueño:
@@ -158,9 +182,8 @@ http://localhost:3000
 ### Probar el flujo de taller:
 
 9. Cerrar sesión e iniciar con `taller@test.com / taller123`.
-10. Si el taller fue creado sin perfil, crearlo desde la pestaña **Historial** o pedir al admin que lo cree.
-11. Con el taller certificado, cargar un servicio al historial del vehículo `ABC123`.
-12. Volver a la cuenta admin para ver talleres pendientes y certificarlos desde **Usuarios y talleres**.
+10. Si fue creado con perfil certificado, puede cargar historial directamente.
+11. Volver a la cuenta admin para ver talleres pendientes y certificarlos desde **Usuarios y talleres**.
 
 ---
 
