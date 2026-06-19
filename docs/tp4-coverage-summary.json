@@ -1,28 +1,28 @@
 {
   "total": {
     "lines": {
-      "total": 235,
-      "covered": 232,
+      "total": 250,
+      "covered": 247,
       "skipped": 0,
-      "pct": 98.72
+      "pct": 98.8
     },
     "statements": {
-      "total": 243,
-      "covered": 236,
+      "total": 258,
+      "covered": 251,
       "skipped": 0,
-      "pct": 97.11
+      "pct": 97.28
     },
     "functions": {
-      "total": 30,
-      "covered": 30,
+      "total": 31,
+      "covered": 31,
       "skipped": 0,
       "pct": 100
     },
     "branches": {
-      "total": 178,
-      "covered": 168,
+      "total": 197,
+      "covered": 187,
       "skipped": 0,
-      "pct": 94.38
+      "pct": 94.92
     },
     "branchesTrue": {
       "total": 0,
@@ -85,28 +85,28 @@
   },
   "src/controllers/tallerController.js": {
     "lines": {
-      "total": 22,
-      "covered": 22,
+      "total": 37,
+      "covered": 37,
       "skipped": 0,
       "pct": 100
     },
     "functions": {
-      "total": 4,
-      "covered": 4,
+      "total": 5,
+      "covered": 5,
       "skipped": 0,
       "pct": 100
     },
     "statements": {
-      "total": 22,
-      "covered": 22,
+      "total": 37,
+      "covered": 37,
       "skipped": 0,
       "pct": 100
     },
     "branches": {
-      "total": 12,
-      "covered": 11,
+      "total": 31,
+      "covered": 30,
       "skipped": 0,
-      "pct": 91.66
+      "pct": 96.77
     }
   },
   "src/controllers/vehiculoController.js": {

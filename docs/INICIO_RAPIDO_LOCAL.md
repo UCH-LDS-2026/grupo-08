@@ -116,35 +116,51 @@ http://localhost:3000
 
 ---
 
+## Aclaración importante: cómo se guardan las credenciales
+
+**Las credenciales NO están hardcodeadas.** Todos los usuarios se almacenan en la tabla `usuarios` de `historycar.db`:
+
+- Las contraseñas se guardan **hasheadas con bcrypt** — nunca en texto plano.
+- El login siempre consulta la base de datos y compara la contraseña ingresada contra el hash guardado.
+- `admin@gmail.com / admin` solo existe después de ejecutar `npm run reset:demo`. Si la base se borra, la cuenta deja de existir.
+- Los usuarios creados desde la pestaña **Usuarios y talleres** también se persisten en `historycar.db` — pueden iniciar sesión inmediatamente.
+
+---
+
 ## Flujo recomendado para pruebas
 
 ### Desde la cuenta admin:
 
 1. Iniciar sesión con `admin@gmail.com / admin`.
-2. En el sidebar, ir a **Crear usuarios** (pestaña visible solo para admin).
+2. En el sidebar, ir a **Usuarios y talleres** (pestaña visible solo para admin).
 3. Crear una cuenta de dueño:
    - Nombre: `Dueño Demo`
    - Email: `dueno@test.com`
    - Password: `dueno123`
    - Rol: `Dueño de vehículo`
-4. Crear una cuenta de taller:
+4. Crear una cuenta de taller con perfil certificado:
    - Nombre: `Taller Demo`
    - Email: `taller@test.com`
    - Password: `taller123`
    - Rol: `Taller mecánico`
+   - Nombre del taller: `Taller Demo SRL`
+   - Dirección: `Calle 123` (opcional)
+   - Teléfono: `2610000000` (opcional)
+   - Marcar **Certificar taller inmediatamente**
+5. Los usuarios creados quedan en `historycar.db` y pueden iniciar sesión.
 
 ### Probar el flujo de dueño:
 
-5. Cerrar sesión e iniciar con `dueno@test.com / dueno123`.
-6. Registrar un vehículo (ej: patente `ABC123`, Toyota Corolla 2020).
-7. Buscar el vehículo por patente.
+6. Cerrar sesión e iniciar con `dueno@test.com / dueno123`.
+7. Registrar un vehículo (ej: patente `ABC123`, Toyota Corolla 2020).
+8. Buscar el vehículo por patente.
 
 ### Probar el flujo de taller:
 
-8. Cerrar sesión e iniciar con `taller@test.com / taller123`.
-9. Ir al panel de historial y crear el perfil de taller (nombre, dirección opcional).
-10. Volver a la cuenta admin y certificar el taller desde `GET /api/talleres/pendientes` (o desde herramienta de prueba como curl/Postman).
+9. Cerrar sesión e iniciar con `taller@test.com / taller123`.
+10. Si el taller fue creado sin perfil, crearlo desde la pestaña **Historial** o pedir al admin que lo cree.
 11. Con el taller certificado, cargar un servicio al historial del vehículo `ABC123`.
+12. Volver a la cuenta admin para ver talleres pendientes y certificarlos desde **Usuarios y talleres**.
 
 ---
 

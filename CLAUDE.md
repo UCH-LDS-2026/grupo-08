@@ -99,7 +99,8 @@ grupo-08/
 | POST | `/api/historial` | Token | taller cert., admin | Taller debe estar certificado |
 | GET | `/api/historial/vehiculo/:id` | No | público | Vehiculo saneado (sin dueno_id) |
 | GET | `/api/historial/patente/:patente` | No | público | Vehiculo saneado (sin dueno_id) |
-| POST | `/api/talleres/perfil` | Token | taller | Crea perfil (pendiente cert.) |
+| POST | `/api/talleres/perfil` | Token | taller | Taller crea su propio perfil (cert=0) |
+| POST | `/api/talleres/admin/perfil` | Token | admin | Admin crea perfil de taller (cert opcional) |
 | GET | `/api/talleres` | Token | admin | Lista talleres |
 | GET | `/api/talleres/pendientes` | Token | admin | Lista sin certificar |
 | PUT | `/api/talleres/:id/aprobar` | Token | admin | Certifica taller |
@@ -187,10 +188,15 @@ dist/ / build/
 - `npm run create:admin` — crea admin personalizado con variables de entorno (requiere password ≥6)
 - `docs/INICIO_RAPIDO_LOCAL.md` — guía paso a paso para levantar el proyecto desde cero
 
-### Panel admin en frontend
-- Pestaña "Crear usuarios" visible solo cuando `usuarioActual.rol === 'admin'`
-- Permite crear usuarios con rol dueno, taller o admin vía POST /api/auth/admin/usuarios
+### Panel admin en frontend ("Usuarios y talleres")
+- Pestaña visible solo cuando `usuarioActual.rol === 'admin'`
+- Sección 1 (Crear usuario): crea en tabla `usuarios` vía POST /api/auth/admin/usuarios
+  - Si rol=taller y se completa nombre_taller, también crea perfil en tabla `talleres`
+    via POST /api/talleres/admin/perfil (puede certificar en el acto)
+- Sección 2 (Talleres pendientes): lista talleres con certificado=0, permite aprobarlos
 - La protección real está en el backend (verificarToken + verificarRoles(['admin']))
+- Las credenciales no están hardcodeadas; todo persiste en historycar.db
+- La contraseña demo (5 chars) es excepción solo de resetDemoData.js
 
 ### Pendiente / Futuro
 - Tests de integración (Supertest)
