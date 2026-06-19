@@ -5,6 +5,7 @@ const { sanitizarVehiculoPublico } = require('../utils/sanitizers');
 const {
     esTipoServicioValido,
     esEnteroNoNegativo,
+    esEnteroPositivo,
     esFechaValida,
     esFechaNoFutura,
     limpiarTexto,
@@ -24,10 +25,17 @@ const historialController = {
             });
         }
 
-        // Validar presencia de campos obligatorios (km=0 es válido)
-        if (!vehiculo_id || !tipo_servicio || kilometraje_servicio == null || kilometraje_servicio === '' || !fecha_servicio) {
+        // vehiculo_id debe ser un entero positivo
+        if (!esEnteroPositivo(Number(vehiculo_id))) {
             return res.status(400).json({
-                error: 'vehiculo_id, tipo_servicio, kilometraje y fecha son obligatorios'
+                error: 'vehiculo_id debe ser un número entero positivo'
+            });
+        }
+
+        // Validar presencia del resto de campos obligatorios (km=0 es válido)
+        if (!tipo_servicio || kilometraje_servicio == null || kilometraje_servicio === '' || !fecha_servicio) {
+            return res.status(400).json({
+                error: 'tipo_servicio, kilometraje y fecha son obligatorios'
             });
         }
 

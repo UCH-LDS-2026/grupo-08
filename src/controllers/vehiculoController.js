@@ -85,22 +85,16 @@ const vehiculoController = {
         }
 
         const usuario = req.usuario;
-        let mostrarNombre = false;
-        let mostrarEmail  = false;
+        const esAdmin      = usuario.rol === 'admin';
+        const esPropietario = usuario.rol === 'dueno' && usuario.id === vehiculo.dueno_id;
+        const esTallerCert  = usuario.rol === 'taller' && Taller.esCertificado(usuario.id);
 
-        if (usuario.rol === 'admin') {
-            mostrarNombre = true;
-            mostrarEmail  = true;
-        } else if (usuario.rol === 'dueno' && usuario.id === vehiculo.dueno_id) {
-            // Dueño propietario ve sus propios datos
-            mostrarNombre = true;
-            mostrarEmail  = true;
-        } else if (usuario.rol === 'taller' && Taller.esCertificado(usuario.id)) {
-            // Taller certificado ve nombre pero no email
-            mostrarNombre = true;
-            mostrarEmail  = false;
-        }
-        // Taller no certificado y dueño ajeno: null en ambos campos
+        // dueno_id: solo admin y propietario (dato interno — no exponer a terceros)
+        const mostrarDuenoId = esAdmin || esPropietario;
+        // dueno_nombre: admin, propietario y taller certificado
+        const mostrarNombre  = esAdmin || esPropietario || esTallerCert;
+        // dueno_email: solo admin y propietario
+        const mostrarEmail   = esAdmin || esPropietario;
 
         res.json({
             vehiculo: {
@@ -111,7 +105,7 @@ const vehiculoController = {
                 modelo:      vehiculo.modelo,
                 anio:        vehiculo.anio,
                 kilometraje: vehiculo.kilometraje,
-                dueno_id:    vehiculo.dueno_id,
+                dueno_id:    mostrarDuenoId ? vehiculo.dueno_id    : null,
                 dueno_nombre: mostrarNombre ? vehiculo.dueno_nombre : null,
                 dueno_email:  mostrarEmail  ? vehiculo.dueno_email  : null,
             }

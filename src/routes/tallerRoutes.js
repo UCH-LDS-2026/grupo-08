@@ -9,6 +9,7 @@ router.post('/perfil', verificarToken, verificarRoles(['taller']), tallerControl
 // Admin lista y gestiona perfiles de talleres
 router.get('/',           verificarToken, verificarRoles(['admin']), tallerController.listar);
 router.get('/pendientes', verificarToken, verificarRoles(['admin']), tallerController.listarPendientes);
+// :usuario_id = ID del usuario con rol 'taller' cuyo perfil se quiere certificar
 router.put('/:usuario_id/aprobar', verificarToken, verificarRoles(['admin']), tallerController.aprobar);
 
 module.exports = router;

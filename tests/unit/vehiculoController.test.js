@@ -142,7 +142,7 @@ describe('vehiculoController', () => {
       expect(res.status).toHaveBeenCalledWith(404);
     });
 
-    it('admin ve nombre y email del dueño', () => {
+    it('admin ve nombre, email y dueno_id', () => {
       req.params = { patente: 'ABC123' };
       req.usuario = { id: 1, rol: 'admin' };
       Vehiculo.buscarPorPatenteConDueno.mockReturnValue(vehiculoMock);
@@ -150,9 +150,10 @@ describe('vehiculoController', () => {
       const { vehiculo } = res.json.mock.calls[0][0];
       expect(vehiculo.dueno_nombre).toBe('Juan Pérez');
       expect(vehiculo.dueno_email).toBe('juan@test.com');
+      expect(vehiculo.dueno_id).toBe(99);
     });
 
-    it('dueño propietario ve sus propios datos', () => {
+    it('dueño propietario ve nombre, email y dueno_id', () => {
       req.params = { patente: 'ABC123' };
       req.usuario = { id: 99, rol: 'dueno' }; // mismo id que dueno_id
       Vehiculo.buscarPorPatenteConDueno.mockReturnValue(vehiculoMock);
@@ -160,9 +161,10 @@ describe('vehiculoController', () => {
       const { vehiculo } = res.json.mock.calls[0][0];
       expect(vehiculo.dueno_nombre).toBe('Juan Pérez');
       expect(vehiculo.dueno_email).toBe('juan@test.com');
+      expect(vehiculo.dueno_id).toBe(99);
     });
 
-    it('dueño ajeno no ve datos personales', () => {
+    it('dueño ajeno no ve datos personales ni dueno_id', () => {
       req.params = { patente: 'ABC123' };
       req.usuario = { id: 55, rol: 'dueno' }; // diferente al dueno_id (99)
       Vehiculo.buscarPorPatenteConDueno.mockReturnValue(vehiculoMock);
@@ -170,9 +172,10 @@ describe('vehiculoController', () => {
       const { vehiculo } = res.json.mock.calls[0][0];
       expect(vehiculo.dueno_nombre).toBeNull();
       expect(vehiculo.dueno_email).toBeNull();
+      expect(vehiculo.dueno_id).toBeNull();
     });
 
-    it('taller certificado ve nombre pero no email', () => {
+    it('taller certificado ve nombre pero no email ni dueno_id', () => {
       req.params = { patente: 'ABC123' };
       req.usuario = { id: 2, rol: 'taller' };
       Vehiculo.buscarPorPatenteConDueno.mockReturnValue(vehiculoMock);
@@ -181,9 +184,10 @@ describe('vehiculoController', () => {
       const { vehiculo } = res.json.mock.calls[0][0];
       expect(vehiculo.dueno_nombre).toBe('Juan Pérez');
       expect(vehiculo.dueno_email).toBeNull();
+      expect(vehiculo.dueno_id).toBeNull();
     });
 
-    it('taller no certificado no ve datos personales', () => {
+    it('taller no certificado no ve datos personales ni dueno_id', () => {
       req.params = { patente: 'ABC123' };
       req.usuario = { id: 2, rol: 'taller' };
       Vehiculo.buscarPorPatenteConDueno.mockReturnValue(vehiculoMock);
@@ -192,6 +196,7 @@ describe('vehiculoController', () => {
       const { vehiculo } = res.json.mock.calls[0][0];
       expect(vehiculo.dueno_nombre).toBeNull();
       expect(vehiculo.dueno_email).toBeNull();
+      expect(vehiculo.dueno_id).toBeNull();
     });
 
     it('normaliza la patente del parámetro a mayúsculas', () => {

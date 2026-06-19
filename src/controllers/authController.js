@@ -111,6 +111,10 @@ const authController = {
 
         const emailNormalizado = normalizarEmail(email);
 
+        if (!esEmailValido(emailNormalizado)) {
+            return res.status(400).json({ error: 'El formato del email no es válido' });
+        }
+
         const usuario = Usuario.buscarPorEmail(emailNormalizado);
         if (!usuario) {
             return res.status(401).json({ error: 'Email o password incorrectos' });

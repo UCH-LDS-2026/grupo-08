@@ -241,6 +241,15 @@ describe('authController', () => {
       expect(res.json.mock.calls[0][0].usuario).not.toHaveProperty('password');
     });
 
+    it('retorna 400 si el email tiene formato inválido', () => {
+      req.body = { email: 'no-es-un-email', password: '123456' };
+      authController.login(req, res);
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ error: expect.stringContaining('email') })
+      );
+    });
+
     it('normaliza el email al buscar el usuario', () => {
       req.body = { email: '  JUAN@TEST.COM  ', password: 'pass123' };
       Usuario.buscarPorEmail.mockReturnValue(null);

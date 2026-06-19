@@ -53,6 +53,18 @@ describe('historialController', () => {
       expect(res.status).toHaveBeenCalledWith(400);
     });
 
+    it('retorna 400 si vehiculo_id es 0 (no es un ID válido)', () => {
+      req.body = { vehiculo_id: 0, tipo_servicio: 'service', kilometraje_servicio: 50000, fecha_servicio: '2025-01-01' };
+      historialController.agregar(req, res);
+      expect(res.status).toHaveBeenCalledWith(400);
+    });
+
+    it('retorna 400 si vehiculo_id es negativo', () => {
+      req.body = { vehiculo_id: -1, tipo_servicio: 'service', kilometraje_servicio: 50000, fecha_servicio: '2025-01-01' };
+      historialController.agregar(req, res);
+      expect(res.status).toHaveBeenCalledWith(400);
+    });
+
     it('retorna 400 si falta tipo_servicio', () => {
       req.body = { vehiculo_id: 1, kilometraje_servicio: 50000, fecha_servicio: '2025-01-01' };
       historialController.agregar(req, res);

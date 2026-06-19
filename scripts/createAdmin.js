@@ -1,5 +1,6 @@
 /**
- * Script para crear el primer usuario administrador.
+ * Crea el primer usuario administrador.
+ * Las tablas se crean automáticamente si no existen (via src/config/database).
  *
  * Uso:
  *   ADMIN_NAME="Admin" ADMIN_EMAIL="admin@test.com" ADMIN_PASSWORD="admin123" npm run create:admin
@@ -8,16 +9,14 @@
  */
 
 require('dotenv').config();
-const bcrypt   = require('bcryptjs');
-const Database = require('better-sqlite3');
-const path     = require('path');
+const bcrypt = require('bcryptjs');
+const db = require('../src/config/database'); // garantiza que las tablas existan
 const { normalizarEmail, esEmailValido, validarPassword } = require('../src/utils/validators');
 
 const ADMIN_NAME     = process.env.ADMIN_NAME;
 const ADMIN_EMAIL    = process.env.ADMIN_EMAIL;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
-// Validar que las tres variables existan
 if (!ADMIN_NAME || !ADMIN_EMAIL || !ADMIN_PASSWORD) {
     console.error('Error: ADMIN_NAME, ADMIN_EMAIL y ADMIN_PASSWORD son requeridos.');
     console.error('Uso: ADMIN_NAME="Admin" ADMIN_EMAIL="admin@test.com" ADMIN_PASSWORD="admin123" npm run create:admin');
@@ -36,13 +35,9 @@ if (!validarPassword(ADMIN_PASSWORD)) {
     process.exit(1);
 }
 
-const db = new Database(path.join(__dirname, '../historycar.db'));
-db.pragma('foreign_keys = ON');
-
 const existe = db.prepare('SELECT id FROM usuarios WHERE email = ?').get(emailNormalizado);
 if (existe) {
     console.error(`Error: El email "${emailNormalizado}" ya está registrado.`);
-    db.close();
     process.exit(1);
 }
 
@@ -53,9 +48,7 @@ const resultado = db.prepare(
 ).run(ADMIN_NAME.trim(), emailNormalizado, passwordHash, 'admin');
 
 console.log('Administrador creado exitosamente.');
-console.log(`  ID:    ${resultado.lastInsertRowid}`);
+console.log(`  ID:     ${resultado.lastInsertRowid}`);
 console.log(`  Nombre: ${ADMIN_NAME.trim()}`);
 console.log(`  Email:  ${emailNormalizado}`);
 console.log(`  Rol:    admin`);
-
-db.close();
