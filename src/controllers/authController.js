@@ -1,11 +1,12 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const bcrypt  = require('bcryptjs');
+const jwt     = require('jsonwebtoken');
 const Usuario = require('../models/usuarioModel');
+const Taller  = require('../models/tallerModel');
 const { normalizarEmail, esEmailValido, validarPassword } = require('../utils/validators');
 
 const authController = {
 
-    // REGISTRO PÚBLICO — solo permite cuentas de dueño de vehículo
+    // REGISTRO PÚBLICO — solo crea rol dueno
     registro: (req, res) => {
         const { nombre, email, password } = req.body;
         const rolSolicitado = req.body.rol;
@@ -14,7 +15,6 @@ const authController = {
             return res.status(400).json({ error: 'Todos los campos son obligatorios' });
         }
 
-        // El registro público solo permite dueños
         if (rolSolicitado && rolSolicitado !== 'dueno') {
             return res.status(400).json({
                 error: 'El registro público solo permite cuentas de dueño de vehículo'
@@ -40,10 +40,7 @@ const authController = {
 
         try {
             const resultado = Usuario.crear(nombre.trim(), emailNormalizado, passwordHash, 'dueno');
-            res.status(201).json({
-                mensaje: 'Usuario creado exitosamente',
-                id: resultado.lastInsertRowid
-            });
+            res.status(201).json({ mensaje: 'Usuario creado exitosamente', id: resultado.lastInsertRowid });
         } catch (err) {
             if (err.message && err.message.includes('UNIQUE')) {
                 return res.status(400).json({ error: 'El email ya está registrado' });
@@ -52,9 +49,11 @@ const authController = {
         }
     },
 
-    // CREACIÓN INTERNA POR ADMIN — permite cualquier rol
+    // CREACIÓN INTERNA POR ADMIN
+    // Roles disponibles: dueno, mecanico, admin
+    // El rol mecanico requiere taller_id obligatorio
     crearUsuarioPorAdmin: (req, res) => {
-        const { nombre, email, password, rol } = req.body;
+        const { nombre, email, password, rol, taller_id } = req.body;
 
         if (!nombre || !email || !password || !rol) {
             return res.status(400).json({ error: 'Todos los campos son obligatorios' });
@@ -70,11 +69,23 @@ const authController = {
             return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' });
         }
 
-        const rolesValidos = ['dueno', 'taller', 'admin'];
+        const rolesValidos = ['dueno', 'mecanico', 'admin'];
         if (!rolesValidos.includes(rol)) {
             return res.status(400).json({
                 error: `Rol inválido. Los roles válidos son: ${rolesValidos.join(', ')}`
             });
+        }
+
+        // Mecánico debe tener taller asociado
+        if (rol === 'mecanico') {
+            if (!taller_id) {
+                return res.status(400).json({
+                    error: 'Para crear un usuario mecánico, debe asociarlo a un taller.'
+                });
+            }
+            if (!Taller.existePorId(taller_id)) {
+                return res.status(400).json({ error: 'El taller indicado no existe.' });
+            }
         }
 
         const existe = Usuario.buscarPorEmail(emailNormalizado);
@@ -83,15 +94,17 @@ const authController = {
         }
 
         const passwordHash = bcrypt.hashSync(password, 10);
+        const tallerIdFinal = rol === 'mecanico' ? taller_id : null;
 
         try {
-            const resultado = Usuario.crear(nombre.trim(), emailNormalizado, passwordHash, rol);
+            const resultado = Usuario.crear(nombre.trim(), emailNormalizado, passwordHash, rol, tallerIdFinal);
             res.status(201).json({
                 mensaje: 'Usuario creado exitosamente',
                 id: resultado.lastInsertRowid,
                 nombre: nombre.trim(),
                 email: emailNormalizado,
-                rol
+                rol,
+                taller_id: tallerIdFinal
             });
         } catch (err) {
             if (err.message && err.message.includes('UNIQUE')) {
@@ -126,7 +139,7 @@ const authController = {
         }
 
         const token = jwt.sign(
-            { id: usuario.id, rol: usuario.rol },
+            { id: usuario.id, rol: usuario.rol, taller_id: usuario.taller_id || null },
             process.env.JWT_SECRET,
             { expiresIn: '24h' }
         );
@@ -138,7 +151,8 @@ const authController = {
                 id: usuario.id,
                 nombre: usuario.nombre,
                 email: usuario.email,
-                rol: usuario.rol
+                rol: usuario.rol,
+                taller_id: usuario.taller_id || null
             }
         });
     },

@@ -17,9 +17,7 @@ const vehiculoController = {
         const dueno_id = req.usuario.id;
 
         if (!patente || !marca || !modelo || anio == null) {
-            return res.status(400).json({
-                error: 'Patente, marca, modelo y año son obligatorios'
-            });
+            return res.status(400).json({ error: 'Patente, marca, modelo y año son obligatorios' });
         }
 
         if (!esPatenteValida(patente)) {
@@ -28,7 +26,7 @@ const vehiculoController = {
             });
         }
 
-        const marcaLimpia  = limpiarTexto(marca,  100);
+        const marcaLimpia  = limpiarTexto(marca, 100);
         const modeloLimpio = limpiarTexto(modelo, 100);
 
         if (!marcaLimpia)  return res.status(400).json({ error: 'La marca no puede estar vacía' });
@@ -42,9 +40,7 @@ const vehiculoController = {
 
         const km = kilometraje != null ? Number(kilometraje) : 0;
         if (!esEnteroNoNegativo(km)) {
-            return res.status(400).json({
-                error: 'El kilometraje debe ser un número entero mayor o igual a 0'
-            });
+            return res.status(400).json({ error: 'El kilometraje debe ser un número entero mayor o igual a 0' });
         }
 
         const existe = Vehiculo.buscarPorPatente(patente);
@@ -62,38 +58,37 @@ const vehiculoController = {
             dueno_id
         );
 
-        res.status(201).json({
-            mensaje: 'Vehículo registrado exitosamente ✅',
-            id: resultado.lastInsertRowid
-        });
+        res.status(201).json({ mensaje: 'Vehículo registrado exitosamente ✅', id: resultado.lastInsertRowid });
     },
 
     // Obtener mis vehículos
     misvehiculos: (req, res) => {
-        const dueno_id = req.usuario.id;
+        const dueno_id  = req.usuario.id;
         const vehiculos = Vehiculo.buscarPorDueno(dueno_id);
         res.json({ vehiculos });
     },
 
-    // Buscar por patente con control de privacidad según rol
+    // Buscar por patente con control de privacidad y restricción de dueño
     buscarPorPatente: (req, res) => {
-        const patente = req.params.patente.trim().toUpperCase();
+        const patente  = req.params.patente.trim().toUpperCase();
+        const usuario  = req.usuario;
         const vehiculo = Vehiculo.buscarPorPatenteConDueno(patente);
 
         if (!vehiculo) {
             return res.status(404).json({ error: 'Vehículo no encontrado' });
         }
 
-        const usuario = req.usuario;
+        // Dueño solo puede consultar sus propios vehículos
+        if (usuario.rol === 'dueno' && usuario.id !== vehiculo.dueno_id) {
+            return res.status(403).json({ error: 'No tenés permiso para consultar este vehículo.' });
+        }
+
         const esAdmin      = usuario.rol === 'admin';
         const esPropietario = usuario.rol === 'dueno' && usuario.id === vehiculo.dueno_id;
-        const esTallerCert  = usuario.rol === 'taller' && Taller.esCertificado(usuario.id);
+        const esMecanico    = usuario.rol === 'mecanico';
 
-        // dueno_id: solo admin y propietario (dato interno — no exponer a terceros)
         const mostrarDuenoId = esAdmin || esPropietario;
-        // dueno_nombre: admin, propietario y taller certificado
-        const mostrarNombre  = esAdmin || esPropietario || esTallerCert;
-        // dueno_email: solo admin y propietario
+        const mostrarNombre  = esAdmin || esPropietario || esMecanico;
         const mostrarEmail   = esAdmin || esPropietario;
 
         res.json({
