@@ -82,6 +82,10 @@ function mostrarDashboard() {
   const puedeCargarHistorial = ['taller', 'admin'].includes(usuarioActual.rol);
   document.getElementById('card-agregar-historial').style.display = puedeCargarHistorial ? '' : 'none';
 
+  // Mostrar pestaña "Crear usuarios" solo para admin
+  const tabAdmin = document.getElementById('tab-admin-usuarios');
+  if (tabAdmin) tabAdmin.style.display = usuarioActual.rol === 'admin' ? '' : 'none';
+
   cargarMisVehiculos();
   document.getElementById('hist-fecha').valueAsDate = new Date();
 
@@ -318,6 +322,33 @@ async function agregarHistorial() {
     showAlert('historial-alert', 'Servicio registrado exitosamente', 'success');
     ['hist-vehiculo-id','hist-descripcion','hist-kilometraje'].forEach(id => document.getElementById(id).value = '');
   } catch { showAlert('historial-alert', 'Error de conexión', 'error'); }
+}
+
+// --- ADMIN: CREAR USUARIO ---
+async function crearUsuarioAdmin() {
+  const nombre   = document.getElementById('admin-nombre').value.trim();
+  const email    = document.getElementById('admin-email').value.trim();
+  const password = document.getElementById('admin-password').value;
+  const rol      = document.getElementById('admin-rol').value;
+
+  if (!nombre || !email || !password || !rol) {
+    return showAlert('admin-usuarios-alert', 'Todos los campos son obligatorios', 'error');
+  }
+
+  try {
+    const res  = await fetch(`${API}/auth/admin/usuarios`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ nombre, email, password, rol })
+    });
+    const data = await res.json();
+    if (!res.ok) return showAlert('admin-usuarios-alert', data.error, 'error');
+    showAlert('admin-usuarios-alert', `Usuario ${escapeHTML(data.email)} creado con rol ${escapeHTML(data.rol)}`, 'success');
+    ['admin-nombre', 'admin-email', 'admin-password'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('admin-rol').value = 'dueno';
+  } catch {
+    showAlert('admin-usuarios-alert', 'Error de conexión con el servidor', 'error');
+  }
 }
 
 // --- CAMBIO DE CONTRASEÑA ---

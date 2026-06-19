@@ -175,6 +175,17 @@
           Cambiar contraseña
         </div>
 
+        <!-- Visible solo para admin — controlado por JS -->
+        <div id="tab-admin-usuarios" class="nav-tab" data-panel="admin-usuarios" onclick="switchPanel('admin-usuarios')" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          Crear usuarios
+        </div>
+
       </nav>
 
       <!-- Cerrar sesión -->
@@ -313,6 +324,38 @@
             </div>
 
             <button class="btn" onclick="cambiarPassword()">Actualizar contraseña</button>
+          </div>
+        </div>
+
+        <!-- Panel: Crear usuarios (solo admin) -->
+        <div id="panel-admin-usuarios" class="panel">
+          <p class="section-title">Crear usuarios</p>
+          <p class="section-subtitle">Creá cuentas internas con cualquier rol. Solo visible para administradores.</p>
+          <div class="card">
+            <div id="admin-usuarios-alert"></div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Nombre completo</label>
+                <input type="text" id="admin-nombre" placeholder="Juan Pérez" />
+              </div>
+              <div class="form-group">
+                <label>Correo electrónico</label>
+                <input type="email" id="admin-email" placeholder="juan@ejemplo.com" />
+              </div>
+              <div class="form-group">
+                <label>Contraseña <span style="font-size:0.8rem;color:#888;">(mín. 6 caracteres)</span></label>
+                <input type="password" id="admin-password" placeholder="••••••" />
+              </div>
+              <div class="form-group">
+                <label>Rol</label>
+                <select id="admin-rol">
+                  <option value="dueno">Dueño de vehículo</option>
+                  <option value="taller">Taller mecánico</option>
+                  <option value="admin">Administrador</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-success" onclick="crearUsuarioAdmin()">Crear usuario</button>
           </div>
         </div>
 
