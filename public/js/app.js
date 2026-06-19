@@ -345,7 +345,7 @@ function limpiarFormularioAdmin() {
   if (camposTaller) camposTaller.style.display = 'none';
 }
 
-// Crea un usuario (y opcionalmente su perfil de taller) guardando en SQLite
+// Crea un usuario (y siempre su perfil si es taller) guardando en SQLite
 async function crearUsuarioAdmin() {
   const nombre   = document.getElementById('admin-nombre').value.trim();
   const email    = document.getElementById('admin-email').value.trim();
@@ -354,6 +354,16 @@ async function crearUsuarioAdmin() {
 
   if (!nombre || !email || !password || !rol) {
     return showAlert('admin-usuarios-alert', 'Todos los campos son obligatorios', 'error');
+  }
+
+  // Si el rol es taller, el nombre del taller es obligatorio
+  if (rol === 'taller') {
+    const nombreTallerCheck = (document.getElementById('admin-nombre-taller')?.value ?? '').trim();
+    if (!nombreTallerCheck) {
+      return showAlert('admin-usuarios-alert',
+        'Para crear un usuario taller, el nombre del taller es obligatorio',
+        'error');
+    }
   }
 
   try {
@@ -368,37 +378,31 @@ async function crearUsuarioAdmin() {
 
     const nuevoId = data.id;
 
-    // 2. Si es taller y hay nombre de taller, crear perfil en tabla `talleres`
+    // 2. Si es taller, crear siempre el perfil en tabla `talleres`
     if (rol === 'taller') {
       const nombreTaller = (document.getElementById('admin-nombre-taller')?.value ?? '').trim();
-      if (nombreTaller) {
-        const certificado = document.getElementById('admin-certificado')?.checked ? 1 : 0;
-        const direccion   = (document.getElementById('admin-direccion')?.value ?? '').trim() || null;
-        const telefono    = (document.getElementById('admin-telefono')?.value  ?? '').trim() || null;
+      const certificado  = document.getElementById('admin-certificado')?.checked ? 1 : 0;
+      const direccion    = (document.getElementById('admin-direccion')?.value ?? '').trim() || null;
+      const telefono     = (document.getElementById('admin-telefono')?.value  ?? '').trim() || null;
 
-        const resTaller = await fetch(`${API}/talleres/admin/perfil`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ usuario_id: nuevoId, nombre_taller: nombreTaller, direccion, telefono, certificado })
-        });
-        const dataTaller = await resTaller.json();
-        if (!resTaller.ok) {
-          showAlert('admin-usuarios-alert',
-            `Usuario creado (ID ${escapeHTML(nuevoId)}) pero error en perfil de taller: ${escapeHTML(dataTaller.error)}`,
-            'error');
-          limpiarFormularioAdmin();
-          return;
-        }
-        const certMsg = certificado ? ' y certificado' : ' (pendiente de certificación)';
+      const resTaller = await fetch(`${API}/talleres/admin/perfil`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ usuario_id: nuevoId, nombre_taller: nombreTaller, direccion, telefono, certificado })
+      });
+      const dataTaller = await resTaller.json();
+      if (!resTaller.ok) {
         showAlert('admin-usuarios-alert',
-          `Usuario ${escapeHTML(data.email)} creado como taller con perfil${certMsg}`,
-          'success');
-        cargarTalleresPendientes();
-      } else {
-        showAlert('admin-usuarios-alert',
-          `Usuario ${escapeHTML(data.email)} creado como taller (sin perfil aún — podés crearlo desde Talleres pendientes)`,
-          'success');
+          `Usuario creado (ID ${escapeHTML(nuevoId)}) pero error en perfil de taller: ${escapeHTML(dataTaller.error)}`,
+          'error');
+        limpiarFormularioAdmin();
+        return;
       }
+      const certMsg = certificado ? ' y certificado' : ' (pendiente de certificación)';
+      showAlert('admin-usuarios-alert',
+        `Usuario ${escapeHTML(data.email)} creado como taller con perfil${certMsg}`,
+        'success');
+      cargarTalleresPendientes();
     } else {
       showAlert('admin-usuarios-alert',
         `Usuario ${escapeHTML(data.email)} creado con rol ${escapeHTML(data.rol)}`,
