@@ -2,44 +2,31 @@ const db = require('../config/database');
 
 const Taller = {
 
-    buscarPorUsuarioId: (usuario_id) => {
-        return db.prepare('SELECT * FROM talleres WHERE usuario_id = ?').get(usuario_id);
-    },
-
-    // certificado = 0 cuando lo crea el propio taller; puede ser 1 cuando lo crea un admin
-    crearPerfil: (usuario_id, nombre_taller, direccion, telefono, certificado = 0) => {
+    crear: (nombre_taller, direccion, telefono, certificado = 1) => {
         return db.prepare(`
-            INSERT INTO talleres (usuario_id, nombre_taller, direccion, telefono, certificado)
-            VALUES (?, ?, ?, ?, ?)
-        `).run(usuario_id, nombre_taller, direccion || null, telefono || null, certificado);
+            INSERT INTO talleres (nombre_taller, direccion, telefono, certificado)
+            VALUES (?, ?, ?, ?)
+        `).run(nombre_taller, direccion, telefono || null, certificado);
     },
 
     listar: () => {
         return db.prepare(`
-            SELECT t.*, u.nombre AS nombre_usuario, u.email AS email_usuario
+            SELECT t.*,
+                COUNT(u.id) AS cantidad_mecanicos
             FROM talleres t
-            JOIN usuarios u ON t.usuario_id = u.id
+            LEFT JOIN usuarios u ON u.taller_id = t.id AND u.rol = 'mecanico'
+            GROUP BY t.id
             ORDER BY t.id
         `).all();
     },
 
-    listarPendientes: () => {
-        return db.prepare(`
-            SELECT t.*, u.nombre AS nombre_usuario, u.email AS email_usuario
-            FROM talleres t
-            JOIN usuarios u ON t.usuario_id = u.id
-            WHERE t.certificado = 0
-            ORDER BY t.id
-        `).all();
+    buscarPorId: (id) => {
+        return db.prepare('SELECT * FROM talleres WHERE id = ?').get(id);
     },
 
-    aprobar: (usuario_id) => {
-        return db.prepare('UPDATE talleres SET certificado = 1 WHERE usuario_id = ?').run(usuario_id);
-    },
-
-    esCertificado: (usuario_id) => {
-        const row = db.prepare('SELECT certificado FROM talleres WHERE usuario_id = ?').get(usuario_id);
-        return row ? row.certificado === 1 : false;
+    existePorId: (id) => {
+        const row = db.prepare('SELECT id FROM talleres WHERE id = ?').get(id);
+        return !!row;
     }
 };
 
