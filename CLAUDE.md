@@ -74,46 +74,48 @@ grupo-08/
 
 ## Roles y permisos
 
-| Acción | dueno | taller | admin |
+| Acción | dueno | mecanico | admin |
 |---|:---:|:---:|:---:|
 | Registrar vehículo | ✓ | — | ✓ |
+| Buscar por patente | solo propios | ✓ | ✓ |
 | Ver mis vehículos | ✓ | ✓ | ✓ |
-| Buscar por patente | ✓ | ✓ | ✓ |
-| Cargar historial | — | ✓ | ✓ |
+| Registrar historial (por patente) | — | ✓ (necesita taller_id) | ✓ |
 | Consultar historial | público | público | público |
+| Crear usuarios | — | — | ✓ |
+| Crear talleres | — | — | ✓ |
 | Cambiar contraseña | ✓ | ✓ | ✓ |
 
----
+Diferencia clave: `mecanico` es un usuario que inicia sesión; `taller` es una entidad física creada por admin.
 
 ## Rutas API
 
 | Método | Ruta | Auth | Roles | Notas |
 |---|---|---|---|---|
 | POST | `/api/auth/registro` | No | — | Solo crea rol `dueno` |
-| POST | `/api/auth/login` | No | — | |
+| POST | `/api/auth/login` | No | — | Devuelve `taller_id` en payload |
 | PUT | `/api/auth/cambiar-password` | Token | todos | |
-| POST | `/api/auth/admin/usuarios` | Token | admin | Crea cualquier rol |
-| POST | `/api/vehiculos` | Token | dueno, admin | Valida formato patente y año |
+| POST | `/api/auth/admin/usuarios` | Token | admin | Requiere `taller_id` para rol mecanico |
+| POST | `/api/vehiculos` | Token | dueno, admin | |
 | GET | `/api/vehiculos/mis-vehiculos` | Token | todos | |
-| GET | `/api/vehiculos/patente/:patente` | Token | todos | Privacidad según rol |
-| POST | `/api/historial` | Token | taller cert., admin | Taller debe estar certificado |
-| GET | `/api/historial/vehiculo/:id` | No | público | Vehiculo saneado (sin dueno_id) |
-| GET | `/api/historial/patente/:patente` | No | público | Vehiculo saneado (sin dueno_id) |
-| POST | `/api/talleres/perfil` | Token | taller | Taller crea su propio perfil (cert=0) |
-| POST | `/api/talleres/admin/perfil` | Token | admin | Admin crea perfil de taller (cert opcional) |
-| GET | `/api/talleres` | Token | admin | Lista talleres |
-| GET | `/api/talleres/pendientes` | Token | admin | Lista sin certificar |
-| PUT | `/api/talleres/:id/aprobar` | Token | admin | Certifica taller |
+| GET | `/api/vehiculos/patente/:patente` | Token | todos | Dueño solo ve sus vehículos (403 si ajeno) |
+| POST | `/api/historial` | Token | mecanico, admin | Recibe `patente` en body; mecanico necesita taller_id |
+| GET | `/api/historial/vehiculo/:id` | No | público | Vehículo saneado (sin dueno_id) |
+| GET | `/api/historial/patente/:patente` | No | público | Vehículo saneado (sin dueno_id) |
+| POST | `/api/talleres` | Token | admin | Crea taller independiente |
+| GET | `/api/talleres` | Token | admin | Lista talleres con cantidad de mecánicos |
+| GET | `/api/talleres/:id` | Token | admin | Obtiene un taller |
 
 Normalización: email → `trim().toLowerCase()` · patente → `trim().toUpperCase()`
 
----
+## Tablas SQLite (5 tablas)
 
-## Tablas SQLite
+`talleres` · `usuarios` · `vehiculos` · `historial` · `deudas`
 
-`usuarios` · `vehiculos` · `historial` · `talleres` · `deudas`
+- `talleres`: entidades físicas independientes (nombre, dirección, certificado)
+- `usuarios.taller_id`: FK → `talleres.id`; obligatorio para rol `mecanico`
+- `historial.mecanico_id`: FK → `usuarios.id`; `historial.taller_id`: FK → `talleres.id`
 
-Las tablas `talleres` y `deudas` existen en el esquema pero **no tienen endpoints activos**.
+`deudas` existe en el esquema pero **no tiene endpoints activos**.
 Esquema completo: `database/schema.sql`
 
 ---

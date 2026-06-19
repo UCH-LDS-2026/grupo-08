@@ -3,16 +3,13 @@ const router = express.Router();
 const tallerController = require('../controllers/tallerController');
 const { verificarToken, verificarRoles } = require('../middlewares/authMiddleware');
 
-// Taller crea su propio perfil (siempre inicia sin certificar)
-router.post('/perfil', verificarToken, verificarRoles(['taller']), tallerController.crearPerfil);
+// POST /api/talleres — crea un taller independiente (admin)
+router.post('/',    verificarToken, verificarRoles(['admin']), tallerController.crear);
 
-// Admin crea el perfil de un usuario taller (puede certificar en el acto)
-router.post('/admin/perfil', verificarToken, verificarRoles(['admin']), tallerController.crearPerfilDesdeAdmin);
+// GET /api/talleres — lista todos los talleres (admin)
+router.get('/',     verificarToken, verificarRoles(['admin']), tallerController.listar);
 
-// Admin lista y gestiona perfiles de talleres
-router.get('/',           verificarToken, verificarRoles(['admin']), tallerController.listar);
-router.get('/pendientes', verificarToken, verificarRoles(['admin']), tallerController.listarPendientes);
-// :usuario_id = ID del usuario con rol 'taller' cuyo perfil se quiere certificar
-router.put('/:usuario_id/aprobar', verificarToken, verificarRoles(['admin']), tallerController.aprobar);
+// GET /api/talleres/:id — obtiene un taller específico (admin)
+router.get('/:id',  verificarToken, verificarRoles(['admin']), tallerController.obtenerPorId);
 
 module.exports = router;

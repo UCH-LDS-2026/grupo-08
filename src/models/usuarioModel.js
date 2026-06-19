@@ -2,47 +2,33 @@ const db = require('../config/database');
 
 const Usuario = {
 
-    // Crear un usuario nuevo
-    crear: (nombre, email, passwordHash, rol) => {
-        const query = db.prepare(`
-            INSERT INTO usuarios (nombre, email, password, rol)
-            VALUES (?, ?, ?, ?)
-        `);
-        return query.run(nombre, email, passwordHash, rol);
+    crear: (nombre, email, passwordHash, rol, taller_id = null) => {
+        return db.prepare(`
+            INSERT INTO usuarios (nombre, email, password, rol, taller_id)
+            VALUES (?, ?, ?, ?, ?)
+        `).run(nombre, email, passwordHash, rol, taller_id);
     },
 
-    // Buscar usuario por email
     buscarPorEmail: (email) => {
-        const query = db.prepare(`
-            SELECT * FROM usuarios WHERE email = ?
-        `);
-        return query.get(email);
+        return db.prepare('SELECT * FROM usuarios WHERE email = ?').get(email);
     },
 
-    // Buscar usuario por id
     buscarPorId: (id) => {
-        const query = db.prepare(`
-            SELECT id, nombre, email, rol, creado_en
+        return db.prepare(`
+            SELECT id, nombre, email, rol, taller_id, creado_en
             FROM usuarios WHERE id = ?
-        `);
-        return query.get(id);
+        `).get(id);
     },
 
-    // Buscar usuario por id incluyendo password (solo para login o cambio de contraseña)
     buscarPorIdConPassword: (id) => {
-        const query = db.prepare(`
-            SELECT id, nombre, email, rol, password
+        return db.prepare(`
+            SELECT id, nombre, email, rol, taller_id, password
             FROM usuarios WHERE id = ?
-        `);
-        return query.get(id);
+        `).get(id);
     },
 
-    // Actualizar la contraseña de un usuario
     actualizarPassword: (id, passwordHash) => {
-        const query = db.prepare(`
-            UPDATE usuarios SET password = ? WHERE id = ?
-        `);
-        return query.run(passwordHash, id);
+        return db.prepare('UPDATE usuarios SET password = ? WHERE id = ?').run(passwordHash, id);
     }
 };
 

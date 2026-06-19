@@ -1,38 +1,49 @@
 const Historial = require('../models/historialModel');
 const Vehiculo  = require('../models/vehiculoModel');
-const Taller    = require('../models/tallerModel');
 const { sanitizarVehiculoPublico } = require('../utils/sanitizers');
 const {
+    normalizarPatente,
+    esPatenteValida,
     esTipoServicioValido,
     esEnteroNoNegativo,
-    esEnteroPositivo,
     esFechaValida,
     esFechaNoFutura,
     limpiarTexto,
 } = require('../utils/validators');
 
+// Comprueba si el usuario puede ver el historial de un vehículo dado.
+// - admin y mecanico: acceso total
+// - dueno: solo puede ver vehículos propios
+function puedeVerHistorial(usuario, vehiculo) {
+    if (usuario.rol === 'admin' || usuario.rol === 'mecanico') return true;
+    if (usuario.rol === 'dueno') return usuario.id === vehiculo.dueno_id;
+    return false;
+}
+
 const historialController = {
 
+    // POST /api/historial — registra un servicio usando la PATENTE del vehículo
     agregar: (req, res) => {
-        const { vehiculo_id, tipo_servicio, descripcion, kilometraje_servicio, fecha_servicio } = req.body;
-        const taller_id = req.usuario.id;
-        const rol       = req.usuario.rol;
+        const { tipo_servicio, descripcion, kilometraje_servicio, fecha_servicio } = req.body;
+        const patente     = normalizarPatente(req.body.patente);
+        const mecanico_id = req.usuario.id;
+        const rol         = req.usuario.rol;
+        const taller_id   = req.usuario.taller_id || null;
 
-        // Talleres necesitan estar certificados; admin puede siempre
-        if (rol === 'taller' && !Taller.esCertificado(taller_id)) {
+        // Mecánico debe tener taller asignado
+        if (rol === 'mecanico' && !taller_id) {
             return res.status(403).json({
-                error: 'El taller debe estar certificado para cargar historial'
+                error: 'El usuario mecánico debe estar asociado a un taller para registrar servicios.'
             });
         }
 
-        // vehiculo_id debe ser un entero positivo
-        if (!esEnteroPositivo(Number(vehiculo_id))) {
-            return res.status(400).json({
-                error: 'vehiculo_id debe ser un número entero positivo'
-            });
+        if (!patente) {
+            return res.status(400).json({ error: 'La patente es obligatoria' });
+        }
+        if (!esPatenteValida(patente)) {
+            return res.status(400).json({ error: 'Formato de patente inválido. Formatos aceptados: ABC123 o AB123CD' });
         }
 
-        // Validar presencia del resto de campos obligatorios (km=0 es válido)
         if (!tipo_servicio || kilometraje_servicio == null || kilometraje_servicio === '' || !fecha_servicio) {
             return res.status(400).json({
                 error: 'tipo_servicio, kilometraje y fecha son obligatorios'
@@ -46,9 +57,7 @@ const historialController = {
         }
 
         if (!esEnteroNoNegativo(kilometraje_servicio)) {
-            return res.status(400).json({
-                error: 'El kilometraje debe ser un número entero mayor o igual a 0'
-            });
+            return res.status(400).json({ error: 'El kilometraje debe ser un número entero mayor o igual a 0' });
         }
 
         if (!esFechaValida(fecha_servicio)) {
@@ -59,16 +68,21 @@ const historialController = {
             return res.status(400).json({ error: 'La fecha de servicio no puede ser futura' });
         }
 
-        const vehiculo = Vehiculo.buscarPorId(vehiculo_id);
+        const vehiculo = Vehiculo.buscarPorPatente(patente);
         if (!vehiculo) {
-            return res.status(404).json({ error: 'Vehículo no encontrado' });
+            return res.status(404).json({ error: 'Vehículo no encontrado para la patente indicada' });
         }
 
         const descripcionLimpia = limpiarTexto(descripcion, 1000);
 
         const resultado = Historial.crear(
-            vehiculo_id, taller_id, tipo_servicio,
-            descripcionLimpia, kilometraje_servicio, fecha_servicio
+            vehiculo.id,
+            mecanico_id,
+            taller_id,
+            tipo_servicio,
+            descripcionLimpia,
+            kilometraje_servicio,
+            fecha_servicio
         );
 
         res.status(201).json({
@@ -77,26 +91,44 @@ const historialController = {
         });
     },
 
-    // GET público: historial por ID de vehículo (sin datos del dueño)
+    // GET /api/historial/vehiculo/:vehiculo_id — requiere token
+    // admin y mecanico: ven cualquier vehículo
+    // dueno: solo sus propios vehículos
     obtenerPorVehiculo: (req, res) => {
         const { vehiculo_id } = req.params;
+        const usuario = req.usuario;
 
         const vehiculo = Vehiculo.buscarPorId(vehiculo_id);
         if (!vehiculo) {
             return res.status(404).json({ error: 'Vehículo no encontrado' });
         }
 
+        if (!puedeVerHistorial(usuario, vehiculo)) {
+            return res.status(403).json({
+                error: 'No tenés permiso para consultar el historial de este vehículo.'
+            });
+        }
+
         const historial = Historial.buscarPorVehiculo(vehiculo_id);
         res.json({ vehiculo: sanitizarVehiculoPublico(vehiculo), historial });
     },
 
-    // GET público: historial por patente (sin datos del dueño)
+    // GET /api/historial/patente/:patente — requiere token
+    // admin y mecanico: ven cualquier vehículo
+    // dueno: solo sus propios vehículos
     obtenerPorPatente: (req, res) => {
         const patente = req.params.patente.trim().toUpperCase();
+        const usuario = req.usuario;
 
         const vehiculo = Vehiculo.buscarPorPatente(patente);
         if (!vehiculo) {
             return res.status(404).json({ error: 'Vehículo no encontrado' });
+        }
+
+        if (!puedeVerHistorial(usuario, vehiculo)) {
+            return res.status(403).json({
+                error: 'No tenés permiso para consultar el historial de este vehículo.'
+            });
         }
 
         const historial = Historial.buscarPorVehiculo(vehiculo.id);
