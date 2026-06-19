@@ -1,6 +1,6 @@
 # HistoryCar 🚗
 
-**Ecosistema inteligente para la trazabilidad y gestión automotriz.**
+**Ecosistema web para trazabilidad y gestión del historial automotriz.**
 
 Universidad Champagnat · Laboratorio de Desarrollo de Software · 2026 · Grupo N.º 8
 
@@ -18,28 +18,34 @@ Universidad Champagnat · Laboratorio de Desarrollo de Software · 2026 · Grupo
 
 ## Descripción del problema
 
-El mercado automotriz sufre de falta de información confiable sobre el estado real de los vehículos usados. Al comprar o vender un auto, el historial de mantenimiento suele perderse, estar incompleto o depender exclusivamente de lo que declara el vendedor.
+En la compra, venta y mantenimiento de vehículos usados suele faltar información confiable sobre el estado real del auto. El historial de servicios puede estar incompleto, perderse entre dueños anteriores o depender solamente de lo que declara el vendedor.
 
 Esto genera:
-- pérdida de confianza entre compradores y vendedores;
-- reducción del valor de reventa de vehículos bien mantenidos;
+
+- menor confianza entre compradores, vendedores, dueños y mecánicos;
+- pérdida de valor para vehículos bien mantenidos;
 - diagnósticos mecánicos más lentos por falta de antecedentes;
-- desconocimiento de reparaciones, siniestros o fallas previas.
+- dificultad para conocer reparaciones, inspecciones, siniestros o servicios previos.
 
 ---
 
 ## Objetivo del sistema
 
-HistoryCar es una plataforma web que permite:
+HistoryCar permite registrar vehículos y mantener un historial técnico consultable por patente, con roles diferenciados y reglas de privacidad.
 
-- registrar usuarios con roles diferenciados (dueño, taller, administrador);
-- iniciar y cerrar sesión con autenticación JWT;
-- registrar vehículos vinculados a un propietario;
-- consultar cualquier vehículo por patente;
-- consultar el historial de servicios de un vehículo por ID o patente;
-- cargar nuevos servicios al historial;
-- cambiar la contraseña de acceso;
-- mantener trazabilidad básica del estado técnico de vehículos usados.
+El MVP implementa:
+
+- autenticación con JWT;
+- registro público de dueños de vehículo;
+- creación interna de usuarios por administrador;
+- gestión de talleres mecánicos independientes;
+- asociación obligatoria de usuarios mecánicos a un taller;
+- registro de vehículos vinculados a un dueño;
+- búsqueda de vehículos por patente con permisos por rol;
+- registro de servicios por patente, sin exigir conocer el ID interno del vehículo;
+- consulta de historial por patente o ID con control de acceso;
+- cambio de contraseña;
+- datos demo locales para facilitar la defensa y las pruebas.
 
 ---
 
@@ -47,296 +53,203 @@ HistoryCar es una plataforma web que permite:
 
 | Rol | Descripción |
 |---|---|
-| `dueno` | Propietario de vehículos |
-| `taller` | Mecánico o taller que carga servicios |
-| `admin` | Administrador con acceso completo |
+| `dueno` | Propietario de vehículos. Puede registrar y consultar sus propios vehículos. |
+| `mecanico` | Usuario mecánico asociado a un taller. Puede consultar vehículos e historial y registrar servicios. |
+| `admin` | Administrador. Gestiona usuarios, talleres, vehículos e historial. |
 
-### Permisos por rol
+### Diferencia entre mecánico y taller
 
-| Acción | dueno | taller | admin |
+- **Mecánico**: es una cuenta de usuario que inicia sesión, tiene email, contraseña y rol `mecanico`.
+- **Taller**: es una entidad independiente creada por el administrador, con nombre, dirección, teléfono y estado de certificación.
+- Todo usuario con rol `mecanico` debe estar asociado a un `taller_id` existente.
+
+### Permisos principales
+
+| Acción | dueno | mecanico | admin |
 |---|:---:|:---:|:---:|
-| Registrar usuario | público | público | público |
-| Iniciar sesión | ✓ | ✓ | ✓ |
+| Registro público | ✓ | — | — |
+| Login | ✓ | ✓ | ✓ |
 | Cambiar contraseña | ✓ | ✓ | ✓ |
+| Crear usuarios internos | — | — | ✓ |
+| Crear talleres | — | — | ✓ |
 | Registrar vehículo | ✓ | — | ✓ |
 | Ver mis vehículos | ✓ | ✓ | ✓ |
-| Buscar vehículo por patente | ✓ | ✓ | ✓ |
-| Cargar historial de servicio | — | ✓ | ✓ |
-| Consultar historial | público | público | público |
+| Buscar vehículo por patente | Solo propios | ✓ | ✓ |
+| Consultar historial | Solo propios | ✓ | ✓ |
+| Registrar servicio por patente | — | ✓ | ✓ |
 
 ---
 
 ## Stack tecnológico
 
 ### Frontend
-- HTML5 · CSS3 · JavaScript vanilla
-- Archivos separados: `public/index.html`, `public/css/styles.css`, `public/js/app.js`
-- Sin framework ni paso de build
+
+- HTML5, CSS3 y JavaScript vanilla.
+- Archivos principales: `public/index.html`, `public/css/styles.css`, `public/js/app.js`.
+- No requiere framework ni proceso de build.
 
 ### Backend
-- Node.js
-- Express.js
+
+- Node.js.
+- Express.js.
+- API REST bajo `/api`.
 
 ### Base de datos
-- SQLite — archivo `historycar.db` generado localmente
-- Driver: `better-sqlite3`
 
-### Autenticación
-- JWT (`jsonwebtoken`) — tokens con expiración de 24h
-- `bcryptjs` — hash de contraseñas con sal 10
+- SQLite local.
+- Driver `better-sqlite3`.
+- Archivo local `historycar.db`, generado en la raíz del proyecto.
 
-### Variables de entorno
-- `dotenv`
+### Seguridad
 
----
-
-## Versiones y dependencias
-
-| Herramienta | Versión declarada |
-|---|---|
-| Node.js | v22+ recomendado |
-| Express.js | 4.18.x |
-| better-sqlite3 | 12.9.x |
-| bcryptjs | 2.4.x |
-| jsonwebtoken | 9.0.x |
-| dotenv | 16.0.x |
-| cors | 2.8.x |
-| nodemon (dev) | 3.0.x |
-
-Las dependencias exactas se encuentran en `package.json`.
+- JWT con `jsonwebtoken`.
+- Hash de contraseñas con `bcryptjs`.
+- Variables de entorno con `dotenv`.
+- Middleware de autenticación y control de roles.
 
 ---
 
-## Inicio rápido en Mac
+## Requisitos previos
 
-Hacer doble clic en **`INICIAR_HISTORYCAR.command`** o seguir la guía paso a paso en [`docs/INICIO_RAPIDO_LOCAL.md`](docs/INICIO_RAPIDO_LOCAL.md).
+- Node.js v18 o superior, recomendado v22+.
+- npm.
+- Git.
+
+Las dependencias exactas están declaradas en `package.json` y `package-lock.json`.
 
 ---
 
-## Instalación y ejecución local
+## Inicio rápido en macOS
 
-### Requisitos previos
-- Node.js v18 o superior
-- npm
-- Git
+El proyecto incluye un ejecutable local para macOS:
 
-### Pasos
+```text
+INICIAR_HISTORYCAR.command
+```
 
-**1. Clonar el repositorio**
+Uso:
+
+1. Abrir la carpeta del proyecto en Finder.
+2. Hacer doble clic en `INICIAR_HISTORYCAR.command`.
+3. El script verifica Node/npm, instala dependencias si faltan, crea `.env`, crea datos demo si no existe la base, abre el navegador e inicia el servidor.
+
+Si `historycar.db` ya existe, el script pregunta antes de reiniciar datos. Solo borra datos si el usuario escribe exactamente `SI`.
+
+Más detalles en [`docs/INICIO_RAPIDO_LOCAL.md`](docs/INICIO_RAPIDO_LOCAL.md).
+
+---
+
+## Instalación manual
+
+### 1. Clonar el repositorio
+
 ```bash
 git clone https://github.com/UCH-LDS-2026/grupo-08.git
 cd grupo-08
 ```
 
-**2. Instalar dependencias**
+### 2. Instalar dependencias
+
 ```bash
 npm install
 ```
 
-**3. Configurar variables de entorno**
+### 3. Crear archivo `.env`
 
-En Windows:
-```cmd
-copy .env.example .env
-```
+En Linux/macOS:
 
-En Linux/Mac:
 ```bash
 cp .env.example .env
 ```
 
-**4. Iniciar el servidor**
-```bash
-npm start
+En Windows:
+
+```cmd
+copy .env.example .env
 ```
 
-**5. Abrir en el navegador**
-```
-http://localhost:3000
-```
+Contenido esperado:
 
-> La base de datos `historycar.db` se crea automáticamente al iniciar el servidor. No se requiere configuración adicional.
-
----
-
-## Variables de entorno
-
-El archivo `.env` debe contener:
-
-```
+```env
 PORT=3000
 JWT_SECRET=clave_secreta_para_desarrollo
 ```
 
-- `PORT` — puerto del servidor (default: 3000)
-- `JWT_SECRET` — clave para firmar los tokens JWT (cambiar en producción)
+### 4. Crear datos demo locales
 
-El archivo `.env` no se sube al repositorio (está en `.gitignore`). El archivo `.env.example` sirve como plantilla.
-
----
-
-## Estructura del repositorio
-
+```bash
+npm run reset:demo
 ```
-grupo-08/
-│
-├── public/                      Frontend estático
-│   ├── index.html               Interfaz principal (SPA)
-│   ├── css/
-│   │   └── styles.css           Estilos
-│   └── js/
-│       └── app.js               Lógica del frontend
-│
-├── src/                         Backend
-│   ├── index.js                 Punto de entrada del servidor
-│   ├── config/
-│   │   └── database.js          Configuración SQLite y creación de tablas
-│   ├── controllers/             Lógica de negocio
-│   │   ├── authController.js
-│   │   ├── vehiculoController.js
-│   │   └── historialController.js
-│   ├── middlewares/
-│   │   └── authMiddleware.js    JWT y control de roles
-│   ├── models/                  Acceso a la base de datos
-│   │   ├── usuarioModel.js
-│   │   ├── vehiculoModel.js
-│   │   └── historialModel.js
-│   └── routes/                  Definición de endpoints
-│       ├── authRoutes.js
-│       ├── vehiculoRoutes.js
-│       └── historialRoutes.js
-│
-├── database/
-│   └── schema.sql               Esquema SQL documentado
-│
-├── docs/
-│   ├── arquitectura.md          Arquitectura del sistema
-│   ├── modelo-datos.md          Modelo ER técnico (diagrama Mermaid)
-│   └── product-discovery.md
-│
-├── trabajos-practicos/          Entregas de TPs
-│
-├── .env.example                 Variables de entorno de referencia
-├── .gitignore
-├── package.json
-└── README.md
+
+> ⚠️ Este comando elimina todos los datos locales existentes en `historycar.db` y recrea la base demo. No usar en producción.
+
+### 5. Iniciar servidor
+
+```bash
+npm start
+```
+
+Abrir en el navegador:
+
+```text
+http://localhost:3000
 ```
 
 ---
 
-## Rutas disponibles
+## Datos demo
 
-| Método | Ruta | Auth | Roles | Descripción |
-|---|---|---|---|---|
-| POST | `/api/auth/registro` | No | Público | Registrar nuevo usuario |
-| POST | `/api/auth/login` | No | Público | Iniciar sesión, devuelve JWT |
-| PUT | `/api/auth/cambiar-password` | Sí | dueno, taller, admin | Cambiar contraseña del usuario autenticado |
-| POST | `/api/vehiculos` | Sí | dueno, admin | Registrar vehículo |
-| GET | `/api/vehiculos/mis-vehiculos` | Sí | dueno, taller, admin | Ver vehículos del usuario autenticado |
-| GET | `/api/vehiculos/patente/:patente` | Sí | dueno, taller, admin | Buscar vehículo por patente (incluye datos del dueño) |
-| POST | `/api/historial` | Sí | taller, admin | Cargar servicio al historial |
-| GET | `/api/historial/vehiculo/:vehiculo_id` | No | Público | Consultar historial por ID de vehículo |
-| GET | `/api/historial/patente/:patente` | No | Público | Consultar historial por patente |
+Después de ejecutar:
+
+```bash
+npm run reset:demo
+```
+
+se crean los siguientes datos:
+
+| Tipo | Email / dato | Password |
+|---|---|---|
+| Administrador | `admin@gmail.com` | `admin` |
+| Dueño demo | `dueno@test.com` | `dueno123` |
+| Mecánico demo | `mecanico@test.com` | `mecanico123` |
+| Taller demo | `Taller Demo SRL` | — |
+| Vehículo demo | `ABC123`, Toyota Corolla 2020 | — |
+
+La contraseña `admin` es una excepción local de demo. En el resto de la aplicación se exige contraseña mínima de 6 caracteres.
+
+Las credenciales se guardan en SQLite, en la tabla `usuarios`. Las contraseñas se almacenan hasheadas con bcrypt, nunca en texto plano.
 
 ---
 
-## Base de datos
+## Flujo recomendado para demo
 
-SQLite local. El archivo `historycar.db` se genera automáticamente en la raíz del proyecto al ejecutar `npm start`.
+1. Ejecutar `npm run reset:demo`.
+2. Ejecutar `npm start`.
+3. Iniciar sesión como administrador: `admin@gmail.com / admin`.
+4. Crear un taller desde la pestaña **Talleres**.
+5. Crear un usuario mecánico desde la pestaña **Usuarios** y asociarlo al taller creado.
+6. Crear o usar un usuario dueño.
+7. Registrar un vehículo para el dueño.
+8. Iniciar sesión como mecánico.
+9. Registrar un servicio usando la patente del vehículo.
+10. Consultar el historial por patente.
+11. Probar que un dueño no puede consultar vehículos ajenos.
+12. Ejecutar `npm test` para mostrar las pruebas automatizadas.
 
-### Tablas
+---
 
-| Tabla | Descripción |
+## Scripts disponibles
+
+| Comando | Descripción |
 |---|---|
-| `usuarios` | Usuarios del sistema con rol y contraseña hasheada |
-| `vehiculos` | Vehículos registrados, vinculados a un dueño |
-| `historial` | Servicios realizados sobre un vehículo |
-| `talleres` | Perfil extendido de usuarios con rol taller (sin endpoints activos) |
-| `deudas` | Multas y obligaciones del vehículo (sin endpoints activos, módulo futuro) |
+| `npm start` | Inicia el servidor Express. |
+| `npm run dev` | Inicia el servidor con nodemon. |
+| `npm test` | Ejecuta los tests unitarios con Jest. |
+| `npm run test:coverage` | Ejecuta tests y genera reporte de cobertura. |
+| `npm run reset:demo` | Reinicia la base local y crea datos demo. |
+| `npm run create:admin` | Crea un administrador personalizado usando variables de entorno. |
 
-El esquema completo se encuentra en:
-- Código: [`src/config/database.js`](src/config/database.js)
-- SQL documentado: [`database/schema.sql`](database/schema.sql)
-
-### Relaciones principales
-
-```
-usuarios 1:N vehiculos
-usuarios 1:N historial (como taller_id)
-vehiculos 1:N historial
-vehiculos 1:N deudas
-usuarios 1:N talleres
-```
-
----
-
-## Modelo ER
-
-El modelo Entidad-Relación técnico del sistema se encuentra documentado en:
-
-[`docs/modelo-datos.md`](docs/modelo-datos.md)
-
-Este archivo contiene un diagrama ER en formato Mermaid basado en el esquema real definido en `database/schema.sql` y en `src/config/database.js`. Representa las tablas actuales del sistema: `usuarios`, `vehiculos`, `historial`, `talleres` y `deudas`.
-
----
-
-## Pruebas manuales sugeridas
-
-1. Registrar un usuario con rol `dueno`.
-2. Iniciar sesión.
-3. Registrar un vehículo.
-4. Intentar registrar la misma patente — debe retornar error.
-5. Buscar el vehículo por patente.
-6. Cerrar sesión. Registrar un usuario con rol `taller`.
-7. Cargar un servicio al historial del vehículo (usando su ID).
-8. Consultar historial por ID del vehículo.
-9. Consultar historial por patente.
-10. Cambiar contraseña. Verificar login con la nueva.
-11. Verificar que el taller NO puede registrar vehículos (403).
-12. Verificar que el dueño NO puede cargar historial (403).
-
----
-
-## Pruebas
-
-### Ejecutar tests
-
-```bash
-npm test                 # Corre los 140 tests unitarios
-npm run test:coverage    # Genera reporte de cobertura en coverage/
-```
-
-Los pull requests hacia `main` ejecutan los tests automáticamente vía GitHub Actions (`.github/workflows/tests.yml`).
-
-### Cobertura (módulos productivos activos — TP4 + hardening)
-
-| Módulo | Statements | Branches | Functions | Lines |
-|---|---|---|---|---|
-| `authController.js` | 96 % | 93 % | 100 % | 96 % |
-| `historialController.js` | 100 % | 100 % | 100 % | 100 % |
-| `tallerController.js` | 100 % | 92 % | 100 % | 100 % |
-| `vehiculoController.js` | 96 % | 92 % | 100 % | 100 % |
-| `authMiddleware.js` | 100 % | 100 % | 100 % | 100 % |
-| `validators.js` | 100 % | 100 % | 100 % | 100 % |
-| `sanitizers.js` | 71 % | 50 % | 100 % | 100 % |
-| **Total** | **97 %** | **94 %** | **100 %** | **99 %** |
-
-Cobertura sobre los módulos productivos activos del alcance unitario. No representa el 100 % del proyecto total.
-El reporte HTML detallado está en `coverage/lcov-report/index.html`.
-Documentación completa: [`docs/tp4-testing.md`](docs/tp4-testing.md).
-
-### Inicio rápido local (cuenta demo incluida)
-
-Para una guía completa paso a paso, ver [`docs/INICIO_RAPIDO_LOCAL.md`](docs/INICIO_RAPIDO_LOCAL.md).
-
-```bash
-npm run reset:demo   # Reinicia datos y crea admin@gmail.com / admin (solo demo local)
-npm start            # Inicia el servidor en http://localhost:3000
-```
-
-> ⚠️ `reset:demo` elimina todos los datos locales y crea una cuenta demo con contraseña corta. No usar en producción.
-
-### Crear primer administrador (entorno real)
+Ejemplo para crear un administrador personalizado:
 
 ```bash
 ADMIN_NAME="Admin" ADMIN_EMAIL="admin@ejemplo.com" ADMIN_PASSWORD="admin123" npm run create:admin
@@ -344,49 +257,169 @@ ADMIN_NAME="Admin" ADMIN_EMAIL="admin@ejemplo.com" ADMIN_PASSWORD="admin123" npm
 
 ---
 
-## Estado actual del proyecto
+## Estructura del repositorio
 
-### Funcionalidades implementadas
+```text
+grupo-08/
+│
+├── public/                       Frontend estático
+│   ├── index.html                Interfaz principal
+│   ├── css/
+│   │   └── styles.css            Estilos
+│   └── js/
+│       └── app.js                Lógica del frontend
+│
+├── src/                          Backend
+│   ├── index.js                  Punto de entrada del servidor
+│   ├── config/
+│   │   └── database.js           Conexión SQLite y creación de tablas
+│   ├── controllers/              Lógica de negocio
+│   │   ├── authController.js
+│   │   ├── vehiculoController.js
+│   │   ├── historialController.js
+│   │   └── tallerController.js
+│   ├── middlewares/
+│   │   └── authMiddleware.js     JWT y control de roles
+│   ├── models/                   Acceso a base de datos
+│   │   ├── usuarioModel.js
+│   │   ├── vehiculoModel.js
+│   │   ├── historialModel.js
+│   │   └── tallerModel.js
+│   ├── routes/                   Endpoints Express
+│   │   ├── authRoutes.js
+│   │   ├── vehiculoRoutes.js
+│   │   ├── historialRoutes.js
+│   │   └── tallerRoutes.js
+│   └── utils/                    Validaciones y saneamiento
+│
+├── database/
+│   └── schema.sql                Esquema SQL documentado
+│
+├── docs/
+│   ├── arquitectura.md
+│   ├── modelo-datos.md
+│   ├── INICIO_RAPIDO_LOCAL.md
+│   ├── tp4-testing.md
+│   └── tp4-coverage-summary.json
+│
+├── tests/
+│   └── unit/                     Tests unitarios Jest
+│
+├── scripts/
+│   ├── createAdmin.js
+│   └── resetDemoData.js
+│
+├── INICIAR_HISTORYCAR.command    Inicio rápido local en macOS
+├── .env.example
+├── .gitignore
+├── package.json
+├── package-lock.json
+└── README.md
+```
 
-- Auth: registro (solo dueños), login JWT, cambio de contraseña, creación interna por admin
-- Registro de vehículos con validación de formato de patente (vieja/Mercosur) y año
-- Búsqueda por patente con privacidad según rol (admin/dueño/taller certificado/ajeno)
-- Módulo de talleres: perfil, certificación por admin, control de acceso al historial
-- Historial de servicios con validación de tipo, fecha y kilometraje; saneamiento público
-- Validaciones backend: email, contraseña, patente, año, km, fecha, tipo de servicio
-- Foreign keys activadas en SQLite (`PRAGMA foreign_keys = ON`)
-- Middleware JWT con validación estricta del esquema `Bearer`
-- Frontend con escape de HTML en todos los valores dinámicos (prevención de XSS)
-- 140 tests unitarios con Jest · 97 % cobertura en módulos activos
-- GitHub Actions: tests automáticos en PR y push a `main`
+---
 
-### Rutas API actuales
+## Rutas API actuales
 
-| Método | Ruta | Auth | Roles |
-|---|---|---|---|
-| POST | `/api/auth/registro` | No | solo dueno |
-| POST | `/api/auth/login` | No | público |
-| PUT | `/api/auth/cambiar-password` | Token | todos |
-| POST | `/api/auth/admin/usuarios` | Token | admin |
-| POST | `/api/vehiculos` | Token | dueno, admin |
-| GET | `/api/vehiculos/mis-vehiculos` | Token | todos |
-| GET | `/api/vehiculos/patente/:patente` | Token | todos |
-| POST | `/api/historial` | Token | taller cert., admin |
-| GET | `/api/historial/vehiculo/:id` | No | público |
-| GET | `/api/historial/patente/:patente` | No | público |
-| POST | `/api/talleres/perfil` | Token | taller |
-| GET | `/api/talleres` | Token | admin |
-| GET | `/api/talleres/pendientes` | Token | admin |
-| PUT | `/api/talleres/:id/aprobar` | Token | admin |
+### Autenticación
 
-### Pendiente o previsto a futuro
+| Método | Ruta | Auth | Roles | Descripción |
+|---|---|---|---|---|
+| POST | `/api/auth/registro` | No | Público | Registro público, solo crea usuarios `dueno`. |
+| POST | `/api/auth/login` | No | Público | Login, devuelve JWT y datos mínimos del usuario. |
+| PUT | `/api/auth/cambiar-password` | Sí | Todos | Cambia la contraseña del usuario autenticado. |
+| POST | `/api/auth/admin/usuarios` | Sí | admin | Crea usuarios internos `dueno`, `mecanico` o `admin`. |
 
-- Tests de integración (Supertest)
-- Módulo funcional de deudas (endpoints CRUD)
-- Deploy en entorno productivo
-- Migración a PostgreSQL para producción multiusuario
-- Migración a PostgreSQL para producción multiusuario
-- Eliminar archivos heredados no activos (`usuarioController.js`, `routes/usuarios.js`, `routes/vehiculos.js`)
+### Vehículos
+
+| Método | Ruta | Auth | Roles | Descripción |
+|---|---|---|---|---|
+| POST | `/api/vehiculos` | Sí | dueno, admin | Registra un vehículo. |
+| GET | `/api/vehiculos/mis-vehiculos` | Sí | Todos | Lista vehículos asociados al usuario autenticado. |
+| GET | `/api/vehiculos/patente/:patente` | Sí | Todos | Busca por patente. El dueño solo puede consultar vehículos propios. |
+
+### Historial
+
+| Método | Ruta | Auth | Roles | Descripción |
+|---|---|---|---|---|
+| POST | `/api/historial` | Sí | mecanico, admin | Registra un servicio usando patente. |
+| GET | `/api/historial/vehiculo/:vehiculo_id` | Sí | Todos | Consulta historial por ID. Dueño solo puede ver vehículos propios. |
+| GET | `/api/historial/patente/:patente` | Sí | Todos | Consulta historial por patente. Dueño solo puede ver vehículos propios. |
+
+### Talleres
+
+| Método | Ruta | Auth | Roles | Descripción |
+|---|---|---|---|---|
+| POST | `/api/talleres` | Sí | admin | Crea un taller independiente. |
+| GET | `/api/talleres` | Sí | admin | Lista talleres existentes. |
+| GET | `/api/talleres/:id` | Sí | admin | Obtiene un taller por ID. |
+
+---
+
+## Base de datos
+
+SQLite local. El archivo `historycar.db` se crea en la raíz del proyecto y no se sube al repositorio.
+
+### Tablas principales
+
+| Tabla | Descripción |
+|---|---|
+| `talleres` | Talleres mecánicos independientes creados por admin. |
+| `usuarios` | Cuentas del sistema con rol, password hasheada y posible `taller_id`. |
+| `vehiculos` | Vehículos registrados y vinculados a un dueño. |
+| `historial` | Servicios registrados sobre vehículos. |
+| `deudas` | Tabla prevista para multas u obligaciones, sin endpoints activos. |
+
+### Relaciones principales
+
+```text
+talleres 1:N usuarios        Un taller puede tener varios mecánicos.
+usuarios 1:N vehiculos       Un dueño puede tener varios vehículos.
+vehiculos 1:N historial      Un vehículo puede tener muchos servicios.
+usuarios 1:N historial       Un mecánico puede cargar muchos servicios.
+talleres 1:N historial       Un taller puede estar asociado a muchos servicios.
+vehiculos 1:N deudas         Un vehículo puede tener muchas obligaciones futuras.
+```
+
+El esquema completo está en:
+
+- [`src/config/database.js`](src/config/database.js)
+- [`database/schema.sql`](database/schema.sql)
+
+---
+
+## Validaciones y reglas de negocio
+
+- El registro público solo crea usuarios `dueno`.
+- Los roles `mecanico` y `admin` solo pueden ser creados por un administrador.
+- Un usuario `mecanico` debe estar asociado a un taller existente.
+- Un dueño solo puede buscar y consultar historial de vehículos propios.
+- Un mecánico puede consultar vehículos e historial, pero no ve el email del dueño.
+- Los servicios se registran por patente; el backend resuelve internamente el ID del vehículo.
+- La patente se normaliza a mayúsculas y se valida con formatos viejo/Mercosur.
+- Las contraseñas se guardan con bcrypt.
+- Las rutas protegidas exigen `Authorization: Bearer <token>`.
+- SQLite usa `PRAGMA foreign_keys = ON` para aplicar integridad referencial.
+
+---
+
+## Testing
+
+El proyecto usa Jest para pruebas unitarias.
+
+```bash
+npm test
+npm run test:coverage
+```
+
+El reporte de cobertura documentado está en:
+
+- [`docs/tp4-testing.md`](docs/tp4-testing.md)
+- [`docs/tp4-coverage-summary.json`](docs/tp4-coverage-summary.json)
+
+Los tests se ejecutan automáticamente en GitHub Actions para pull requests y pushes a `main`.
+
+> Nota: el conteo exacto de tests y la cobertura pueden cambiar después de cada refactor. Para obtener el valor real actual, ejecutar `npm test` y `npm run test:coverage`.
 
 ---
 
@@ -394,19 +427,67 @@ ADMIN_NAME="Admin" ADMIN_EMAIL="admin@ejemplo.com" ADMIN_PASSWORD="admin123" npm
 
 | Rama | Uso |
 |---|---|
-| `main` | Rama estable. Recibe merges desde feature/* vía Pull Request. |
-| `feature/*` | Ramas de trabajo por funcionalidad. Se eliminan tras el merge. |
+| `main` | Rama estable. Debe recibir cambios mediante Pull Request. |
+| `feature/*` | Ramas de trabajo por funcionalidad. |
 
-El flujo de trabajo es: crear rama `feature/*` → desarrollar → Pull Request → revisión → merge a `main`.
+Flujo recomendado:
+
+```text
+crear rama feature/* → desarrollar → abrir Pull Request → revisar → mergear a main
+```
 
 ---
 
-## Justificación del Stack
+## Justificación del stack
 
-| Tecnología | Razón |
+| Tecnología | Justificación |
 |---|---|
-| Node.js + Express | Conocimiento previo del equipo. Rápido de configurar para APIs REST. |
-| SQLite | Sin servidor externo. Ideal para prototipo académico y desarrollo local. |
-| JWT | Autenticación stateless sin sesiones en servidor. |
-| JavaScript vanilla | Sin framework ni build step. Código directo y comprensible. |
-| bcryptjs | Estándar para hasheo seguro de contraseñas. |
+| Node.js + Express | Permite construir una API REST simple, rápida y adecuada para el alcance académico. |
+| SQLite | No requiere servidor externo. Es ideal para prototipos, demos y desarrollo local. |
+| JavaScript vanilla | Evita complejidad de frameworks y permite enfocarse en arquitectura, lógica y persistencia. |
+| JWT | Facilita autenticación stateless para endpoints protegidos. |
+| bcryptjs | Permite almacenar contraseñas de forma segura mediante hashing. |
+| Jest | Permite pruebas unitarias rápidas y automatizadas. |
+
+---
+
+## Estado actual y próximos pasos
+
+### Implementado
+
+- MVP web funcional.
+- Autenticación y roles.
+- Gestión de usuarios por admin.
+- Gestión de talleres independientes.
+- Asociación de mecánicos a talleres.
+- Registro y consulta de vehículos.
+- Registro de servicios por patente.
+- Consulta de historial con control de acceso.
+- Validaciones backend.
+- Tests unitarios.
+- Script de datos demo.
+- Inicio rápido local en macOS.
+
+### Pendiente o futuro
+
+- Agregar tests de integración con Supertest.
+- Actualizar diagramas y documentos técnicos si cambia el modelo.
+- Implementar módulo funcional de deudas.
+- Agregar ejecutable equivalente para Windows si se requiere inicio con doble clic.
+- Deploy productivo.
+- Migración a PostgreSQL para uso multiusuario real.
+
+---
+
+## Archivos no versionados
+
+El repositorio ignora archivos locales o generados automáticamente:
+
+- `.env`
+- `historycar.db`
+- `*.db`, `*.sqlite`, `*.sqlite3`
+- `node_modules/`
+- `coverage/`
+- `.claude/`
+
+Ver reglas en [`.gitignore`](.gitignore).
